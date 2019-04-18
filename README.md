@@ -28,14 +28,9 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 
 ## How to run tests
 
-TODO
-
 1. Make sure you cd into project root directory.
 1. Make sure you activate virtual environment.
 1. `python SI507project_tests.py`
-2. Second (e.g. any other setup necessary)
-3. etc (e.g. run the specific test file)
-NOTE: Need not have 3 steps, but should have as many as are appropriate!
 
 ## In this repository:
 
