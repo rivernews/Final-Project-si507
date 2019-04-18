@@ -8,6 +8,7 @@ from selenium.common.exceptions import (
     TimeoutException,
     NoSuchElementException
 )
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from pathlib import Path
 
@@ -43,27 +44,30 @@ class Browser:
             }
         )
         options.add_argument("--incognito")
+
+        # https://stackoverflow.com/questions/44770796/how-to-make-selenium-not-wait-till-full-page-load-which-has-a-slow-script/44771628
         
         browser = webdriver.Chrome(
             executable_path=(PROJECT_ROOT_DIRECTORY / 'chromedriver').resolve(),
-            chrome_options=options
+            options=options,
         )
 
         return browser
     
     def request_page(self,
             page_url="http://fortune.com/fortune500/list/",
-            target_xpath='''//*[@id="pageContent"]/div[3]/div/div/div[1]/div[1]/ul/li[1]/a/span[2]''',
             timeout=10,
         ):
         try:
+            print("INFO: browser getting the page...")
             self.browser.get(page_url)
-            # TODO
-            # WebDriverWait(
-            #     self.browser, timeout
-            # ).until(
-            #     EC.visibility_of_element_located((By.XPATH, target_xpath))
-            # )
+            # if extra_wait_css_selector:
+            #     print("INFO: extra wait for request page by css selector {}".format(extra_wait_css_selector))
+            #     WebDriverWait(
+            #         self.browser, timeout
+            #     ).until(
+            #         EC.visibility_of_element_located((By.CSS_SELECTOR, extra_wait_css_selector))
+            #     )
             return True
         except TimeoutException:
             print("ERROR: Timeout waiting for GET webpage")

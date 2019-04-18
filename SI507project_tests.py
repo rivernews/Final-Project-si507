@@ -15,15 +15,15 @@ class TestCases(unittest.TestCase):
         self.browser.close()
         return super().tearDown()
 
-    def test_scrap_company_list(self):
+    # def test_scrap_company_list(self):
         
-        scrapper = WebScrapper(browser=self.browser, db=self.db_manager)
-        scrapper.fetch_fortune_company_list()
+    #     scrapper = WebScrapper(browser=self.browser, db=self.db_manager)
+    #     scrapper.fetch_fortune_company_list()
 
-        self.assertEqual(
-            scrapper.company_list[0].lower(),
-            'walmart'
-        )
+    #     self.assertEqual(
+    #         scrapper.company_list[0].lower(),
+    #         'walmart'
+    #     )
     
     def test_scrap_company_rating(self):
         scrapper = WebScrapper(browser=self.browser, db=self.db_manager)
