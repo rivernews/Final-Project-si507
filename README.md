@@ -1,6 +1,50 @@
-# Final-Project-si507
+# SI 507 Final Project - Company Rating Data
 
-## Project Scope
+Full Name of Author: Shaung Cheng
+
+[Link to this repository](https://github.com/rivernews/Final-Project-si507)
+
+---
+
+## Project Description
+
+My project will build a database that contains rating data for the top 500 fortune companies. The data will be collected mainly from the Glassdoor or Indeed’s company review rating data, and will collect the list of fortune 500 from the Fortune 500 website. 
+
+We will do cross-site scrapping - first scrap the list of fortune 500, then find these companies in Glassdoor or Indeed. Our scrapper will be able to deal with asynchronous Ajax web page as well. If time allows - the project will allow users to have access to these company data in an organized and structured way and help them get insight from the data. Users can filter data based on company size, region or other criteria, and check out the corresponding charts to see any trend or pattern and hopefully help them decide what type of companies they want to pursue their career at. The backend will serve as a REST API to provide data for the frontend, and the routes will serve the endpoints of the API. 
+
+## How to run
+
+1. First, you should install all requirements with `pip install -r requirements.txt`)
+2. [ ] TODO
+
+## How to use
+
+1. [ ] TODO
+1. [ ] TODO (Optional): Markdown syntax to include an screenshot/image: ![alt text](image.jpg)
+
+## Routes in this application
+- `/home` -> this is the home page
+- [ ] TODO
+
+## How to run tests
+
+TODO
+
+1. First... (e.g. access a certain directory if necessary)
+2. Second (e.g. any other setup necessary)
+3. etc (e.g. run the specific test file)
+NOTE: Need not have 3 steps, but should have as many as are appropriate!
+
+## In this repository:
+
+TODO
+
+- Directory Name
+  - File in directory
+  - File in directory
+- File name
+- File name
+
 
 ## Data Schema
 
@@ -21,6 +65,53 @@ Explanations on some fields:
 - Address
     - Similar to Link, serve as OneToOne field for other tables about address information.
 
+
+---
+## Code Requirements for Grading
+Please check the requirements you have accomplished in your code as demonstrated.
+- [x] This is a completed requirement.
+- [ ] This is an incomplete requirement.
+
+Below is a list of the requirements listed in the rubric for you to copy and paste.  See rubric on Canvas for more details.
+
+### General
+- [ ] Project is submitted as a Github repository
+- [ ] Project includes a working Flask application that runs locally on a computer
+- [ ] Project includes at least 1 test suite file with reasonable tests in it.
+- [ ] Includes a `requirements.txt` file containing all required modules to run program
+- [ ] Includes a clear and readable README.md that follows this template
+- [ ] Includes a sample .sqlite/.db file
+- [x] Includes a diagram of your database schema
+- [ ] Includes EVERY file needed in order to run the project
+- [ ] Includes screenshots and/or clear descriptions of what your project should look like when it is working
+
+### Flask Application
+- [ ] Includes at least 3 different routes
+- [ ] View/s a user can see when the application runs that are understandable/legible for someone who has NOT taken this course
+- [ ] Interactions with a database that has at least 2 tables
+- [ ] At least 1 relationship between 2 tables in database
+- [ ] Information stored in the database is viewed or interacted with in some way
+
+### Additional Components (at least 6 required)
+- [ ] **Use of a new module**
+- [ ] Use of a second new module
+- [ ] Object definitions using inheritance (indicate if this counts for 2 or 3 of the six requirements in a parenthetical)
+- [ ] A many-to-many relationship in your database structure
+- [ ] At least one form in your Flask application
+- [ ] Templating in your Flask application
+- [ ] **Inclusion of JavaScript files in the application**
+- [ ] **Links in the views of Flask application page/s**
+- [ ] Relevant use of `itertools` and/or `collections`
+- [ ] **Sourcing of data using web scraping**
+- [ ] **Sourcing of data using web REST API requests**
+- [ ] Sourcing of data using user input and/or a downloaded .csv or .json dataset
+- [ ] Caching of data you continually retrieve from the internet in some way
+
+### Submission
+- [ ] I included a link to my GitHub repository with the correct permissions on Canvas! (Did you though? Did you actually? Are you sure you didn't forget?)
+- [ ] I included a summary of my project and how I thought it went **in my Canvas submission**!
+
+
 ## Reference & Resources
 
 - [Proposal Link](https://paper.dropbox.com/doc/SI507-Final-Project-by-Shaung-Cheng--Aa3swZraJVTqmfX6hACLwYLsAQ-W3RLpuHtj7eeItw4Hw4SI).
@@ -28,3 +119,4 @@ Explanations on some fields:
 - [Database schema design tool.](https://app.quickdatabasediagrams.com/#/d/oo35Ob)
 
 - [Repository URL](https://github.com/rivernews/Final-Project-si507)
+
