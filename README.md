@@ -81,7 +81,6 @@ Explanations on some fields:
 - Address
     - Similar to Link, serve as OneToOne field for other tables about address information.
 
-
 ---
 ## Code Requirements for Grading
 Please check the requirements you have accomplished in your code as demonstrated.
