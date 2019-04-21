@@ -23,8 +23,9 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 1. [ ] TODO (Optional): Markdown syntax to include an screenshot/image: ![alt text](image.jpg)
 
 ## Routes in this application
-- `/home` -> this is the home page
-- [ ] TODO
+- `/` -> this is the home page
+- `/companies/` -> master view showing list of companies.
+- `/companies/<int: id>` -> detail view of each company and their rating.
 
 ## How to run tests
 
@@ -34,13 +35,31 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 
 ## In this repository:
 
+- doc
+    - img
+        - Image files for README.md
+- `browser.py`
+- `database.py`
+- `SI507project.py`
+
 TODO
 
-- Directory Name
-  - File in directory
-  - File in directory
-- File name
-- File name
+
+## Roadmap
+- Web Scrapping
+- Data ETL
+    - [ ] Take company name, fortune 500 rank, sampled date & rating data
+    - (optional: other company data specified in database schema)
+- Database & Cache
+    - [ ] Store data in database using database manager class.
+    - (optional: store web page in database)
+- Flask app
+    - `/`: home page
+    - `/companies/`: master view
+    - `/companies/<int: id>`: detail view
+- Writing Test cases
+    - [ ] Test scrapping functionality
+    - [ ] Test routes
 
 
 ## Data Schema
