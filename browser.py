@@ -13,6 +13,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from pathlib import Path
 
 import codecs
+import re
 
 import database
 
@@ -80,7 +81,8 @@ class Browser:
             else:
                 print("not using cache, paeg url is", page_url)
                 self.browser.get(page_url)
-                filename = f'cache/{page_name}.html'
+                sanitized_page_name = re.sub(r'[^0-9a-zA-Z_]', '-', page_name.lower())
+                filename = f'cache/{sanitized_page_name}.html'
                 self.save_page(filename)
                 self.db_manager.create(database.Tables.WEBPAGE_CACHE.value, {
                     'url': page_url,
