@@ -33,6 +33,10 @@ class TestCases(unittest.TestCase):
             self.scrapper.get_company_rating(self.scrapper.company_list[0]),
             3.2
         )
+    
+    def test_company_data_stored(self):
+        self.scrapper.fetch_fortune_company_list()
+        
 
     
 
