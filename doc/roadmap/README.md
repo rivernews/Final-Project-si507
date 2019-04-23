@@ -1,0 +1,20 @@
+## Roadmap
+- Web Scrapping
+- Data ETL
+    - [x] Take company name, fortune 500 rank, sampled date & rating data
+    - (de-prioritized) Do you want to store fortune 500 ranking? Where do you want to store it? `CompanyRating` might be a good place.
+    - [x] Database manager's `create()` has to return id of the object created. This is important for setting up one-to-many fields.
+    - (optional: other company data specified in database schema)
+- Database & Cache
+    - **Cache webpage**
+        - [x] Store url-filename pairs in database
+        - [x] When selenium navigate_to is called, check if the url is in db
+    - [ ] 🔥Store data in database using database manager class.
+    - (optional: store web page in database)
+- Flask app
+    - `/`: home page
+    - `/companies/`: master view
+    - `/companies/<int: id>`: detail view
+- Writing Test cases
+    - [ ] Test scrapping functionality
+    - [ ] Test routes

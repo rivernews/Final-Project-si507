@@ -110,8 +110,7 @@ class DatabaseManager:
                 if count > 0:
                     print("INFO: object already exist, will skip creation. table={}, object: {}".format(table_name, db_object))
                     return
-
-                self.db.run_write_sql_commands([
+                r = self.db.run_write_sql_commands([
                     ('INSERT INTO {} ({}) VALUES ({});'.format(
                         table_name,
                         # insert question marks for field
@@ -122,6 +121,7 @@ class DatabaseManager:
                     # value tuples
                     tuple(db_object.values())
                 ])
+                return self.db.cursor.lastrowid
             except sqlite3.IntegrityError:
                 print("INFO: create(): object already exist, will do nothing. table={}, object: {}".format(table_name, db_object))
             except Exception as err:

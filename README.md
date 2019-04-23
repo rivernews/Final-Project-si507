@@ -33,6 +33,12 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 1. Make sure you activate virtual environment.
 1. `python SI507project_tests.py`
 
+If you also want to test caching:
+
+1. Delete database
+1. (optional) Delete all files under `cache/`.
+1. Re-run `python SI507project_tests.py`.
+
 ## In this repository:
 
 - doc
@@ -43,28 +49,6 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 - `SI507project.py`
 
 TODO
-
-
-## Roadmap
-- Web Scrapping
-- Data ETL
-    - [ ] Take company name, fortune 500 rank, sampled date & rating data
-    - [ ] Do you want to store fortune 500 ranking? Where do you want to store it? `CompanyRating` might be a good place.
-    - [ ] Database manager's `create()` has to return id of the object created. This is important for setting up one-to-many fields.
-    - (optional: other company data specified in database schema)
-- Database & Cache
-    - **Cache webpage**
-        - [x] Store url-filename pairs in database
-        - [x] When selenium navigate_to is called, check if the url is in db
-    - [ ] Store data in database using database manager class.
-    - (optional: store web page in database)
-- Flask app
-    - `/`: home page
-    - `/companies/`: master view
-    - `/companies/<int: id>`: detail view
-- Writing Test cases
-    - [ ] Test scrapping functionality
-    - [ ] Test routes
 
 
 ## Data Schema
@@ -140,3 +124,6 @@ Below is a list of the requirements listed in the rubric for you to copy and pas
 
 - [Repository URL](https://github.com/rivernews/Final-Project-si507)
 
+- [How to use regex to do replace in Python](https://stackoverflow.com/questions/11475885/python-replace-regex)
+
+- [How to return id after insert using SQL in python?](https://stackoverflow.com/questions/2548493/how-do-i-get-the-id-after-insert-into-mysql-database-with-python)
