@@ -12,6 +12,8 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from pathlib import Path
 
+import codecs
+
 """
     How to scrap a page?
 
@@ -29,6 +31,10 @@ class Browser:
     
     def __init__(self, *args, **kwargs):
         self.browser = self.get_browser()
+        self.cached_page_table = {
+            'http://fortune.com/fortune500/list/': 'cache/fortune-500.html',
+            'https://www.glassdoor.com/Reviews/company-reviews.htm?suggestCount=10&suggestChosen=false&clickSource=searchBtn&typedKeyword=Walmart&sc.keyword=Walmart&locT=C&locId=&jobType=': 'cache/gd-Walmart.html',
+        }
         return super().__init__(*args, **kwargs)
     
     def get_browser(self):
@@ -60,7 +66,11 @@ class Browser:
         ):
         try:
             print("INFO: browser getting the page...")
-            self.browser.get(page_url)
+            if page_url in self.cached_page_table and Path(self.cached_page_table[page_url]).exists():
+                self.browser.get(f'file://{Path(self.cached_page_table[page_url]).absolute()}')
+            else:
+                print("not using cache, paeg url is", page_url)
+                self.browser.get(page_url)
             # if extra_wait_css_selector:
             #     print("INFO: extra wait for request page by css selector {}".format(extra_wait_css_selector))
             #     WebDriverWait(
@@ -93,3 +103,8 @@ class Browser:
     
     def close(self):
         self.browser.quit()
+    
+    def save_page(self, filename):
+        with codecs.open('cache/' + filename, "w", "utf-8") as fileObject:
+            html = self.browser.page_source
+            fileObject.write(html)
