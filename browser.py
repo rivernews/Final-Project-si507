@@ -14,6 +14,8 @@ from pathlib import Path
 
 import codecs
 
+import database
+
 """
     How to scrap a page?
 
@@ -29,12 +31,9 @@ import codecs
 
 class Browser:
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, db_manager, *args, **kwargs):
         self.browser = self.get_browser()
-        self.cached_page_table = {
-            'http://fortune.com/fortune500/list/': 'cache/fortune-500.html',
-            'https://www.glassdoor.com/Reviews/company-reviews.htm?suggestCount=10&suggestChosen=false&clickSource=searchBtn&typedKeyword=Walmart&sc.keyword=Walmart&locT=C&locId=&jobType=': 'cache/gd-Walmart.html',
-        }
+        self.db_manager = db_manager
         return super().__init__(*args, **kwargs)
     
     def get_browser(self):
@@ -63,14 +62,30 @@ class Browser:
     def request_page(self,
             page_url="http://fortune.com/fortune500/list/",
             timeout=10,
+            page_name=''
         ):
         try:
             print("INFO: browser getting the page...")
-            if page_url in self.cached_page_table and Path(self.cached_page_table[page_url]).exists():
-                self.browser.get(f'file://{Path(self.cached_page_table[page_url]).absolute()}')
+            
+            cache_lookup_result_list = self.db_manager.filter(database.Tables.WEBPAGE_CACHE.value, {
+                'url': page_url
+            })
+            cache_file_path = None
+            if len(cache_lookup_result_list) > 0:
+                print("Cache found =", cache_lookup_result_list[0][2])
+                cache_file_path = Path(cache_lookup_result_list[0][2])
+
+            if cache_file_path and cache_file_path.exists():
+                self.browser.get(f'file://{cache_file_path.absolute()}')
             else:
                 print("not using cache, paeg url is", page_url)
                 self.browser.get(page_url)
+                filename = f'cache/{page_name}.html'
+                self.save_page(filename)
+                self.db_manager.create(database.Tables.WEBPAGE_CACHE.value, {
+                    'url': page_url,
+                    'filename': filename
+                }, ['url'])
             # if extra_wait_css_selector:
             #     print("INFO: extra wait for request page by css selector {}".format(extra_wait_css_selector))
             #     WebDriverWait(
@@ -105,6 +120,6 @@ class Browser:
         self.browser.quit()
     
     def save_page(self, filename):
-        with codecs.open('cache/' + filename, "w", "utf-8") as fileObject:
+        with codecs.open(filename, "w", "utf-8") as fileObject:
             html = self.browser.page_source
             fileObject.write(html)

@@ -16,6 +16,7 @@ class WebScrapper:
         # navigate to target page
         self.navigate_to(
             'http://fortune.com/fortune500/list/',
+            page_name='fortune-500'
         )
 
         # get the company name list
@@ -35,9 +36,10 @@ class WebScrapper:
             'div[id=ReviewSearchResults] ' +
             'div.header.cell.info'
         )
-
+        sanitized_company_name = company.strip().replace(' ', '-')
         self.navigate_to(
             self.generate_glassdoor_company_query_url(company),
+            page_name=f'gd-{sanitized_company_name}'
         )
 
         # extract that specific company rating data
@@ -59,8 +61,8 @@ class WebScrapper:
 
         return rating
     
-    def navigate_to(self, url):
-        self.browser.request_page(page_url=url)
+    def navigate_to(self, url, page_name):
+        self.browser.request_page(page_url=url, page_name=page_name)
     
     def generate_glassdoor_company_query_url(self, company_name):
         template_url = '''https://www.glassdoor.com/Reviews/company-reviews.htm?suggestCount=10&suggestChosen=false&clickSource=searchBtn&typedKeyword=%s&sc.keyword=%s&locT=C&locId=&jobType='''

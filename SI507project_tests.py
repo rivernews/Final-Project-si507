@@ -7,8 +7,8 @@ import database as DatabaseUtil
 class TestCases(unittest.TestCase):
 
     def setUp(self):
-        self.browser = BrowserUtil.Browser()
         self.db_manager = DatabaseUtil.DatabaseManager()
+        self.browser = BrowserUtil.Browser(db_manager=self.db_manager)
         return super().setUp()
     
     def tearDown(self):
@@ -28,14 +28,11 @@ class TestCases(unittest.TestCase):
     def test_scrap_company_rating(self):
         scrapper = WebScrapper(browser=self.browser, db=self.db_manager)
         scrapper.fetch_fortune_company_list()
-        scrapper.browser.save_page('fortune-500.html')
 
         self.assertEqual(
             scrapper.get_company_rating(scrapper.company_list[0]),
             3.2
         )
-        sanitized_name = scrapper.company_list[0].strip().replace(' ', '-')
-        scrapper.browser.save_page(f'gd-{sanitized_name}.html')
 
     
 

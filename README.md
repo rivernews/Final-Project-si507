@@ -51,9 +51,9 @@ TODO
     - [ ] Take company name, fortune 500 rank, sampled date & rating data
     - (optional: other company data specified in database schema)
 - Database & Cache
-    - [ ] **Cache webpage**
-        - Store url-filename pairs in database
-        - When selenium navigate_to is called, check if the url is in db
+    - **Cache webpage**
+        - [ ] Store url-filename pairs in database
+        - [ ] When selenium navigate_to is called, check if the url is in db
     - [ ] Store data in database using database manager class.
     - (optional: store web page in database)
 - Flask app

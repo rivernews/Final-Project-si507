@@ -2,6 +2,13 @@ import sqlite3 # https://docs.python.org/2/library/sqlite3.html
 import pathlib
 import os
 
+import enum
+
+class Tables(enum.Enum):
+    COMPANY = 'Company'
+    WEBPAGE_CACHE = 'WebpageCache'
+    COMPANY_RATING = 'CompanyRating'
+
 class Database:
 
     database_file_name = None
@@ -47,7 +54,6 @@ class DatabaseManager:
 
     def __init__(self, *args, **kwargs):
         self.db = Database(self.db_name)
-
         self.prepare_database_and_schema()
     
     def count(self, table_name, db_object):
@@ -129,35 +135,31 @@ class DatabaseManager:
         else:
             # create db file & connect
             self.db.up()
-
             # create schema for tables
             self.db.run_write_sql_commands([
-                ('''CREATE TABLE States (
+                ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
-                    Name TEXT
+                    name TEXT
                 );
-                ''',),
+                '''.format(Tables.COMPANY.value),),
             ])
             self.db.run_write_sql_commands([
-                ('''CREATE TABLE Sites (
+                ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
-                    Name TEXT,
-                    Type TEXT,
-                    Description TEXT,
-                    Location TEXT,
+                    value REAL,
+                    companyId INTEGER,
                     
-                    StateID INTEGER,
-                    FOREIGN KEY (StateID) REFERENCES States(id)
+                    FOREIGN KEY (companyId) REFERENCES Company(id)
                 );
-                ''',),
+                '''.format(Tables.COMPANY_RATING.value),),
             ])
             self.db.run_write_sql_commands([
-                ('''CREATE TABLE SitePages (
+                ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
-                    Url TEXT,
-                    IsDone INTEGER
+                    url TEXT,
+                    filename TEXT
                 );
-                ''',),
+                '''.format(Tables.WEBPAGE_CACHE.value),),
             ])
 
         return self.db
