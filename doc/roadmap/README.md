@@ -9,12 +9,13 @@
     - **Cache webpage**
         - [x] Store url-filename pairs in database
         - [x] When selenium navigate_to is called, check if the url is in db
-    - [ ] 🔥Store data in database using database manager class.
-    - (optional: store web page in database)
-- Flask app
-    - `/`: home page
+    - [x] Store data in database using database manager class.
+    - [x] (optional: store web page in database)
+    - [x] Scrap all 500 / or at least multiple companies in database.
+- Flask app🔥
+    - `/`: 🔥home page
     - `/companies/`: master view
     - `/companies/<int: id>`: detail view
 - Writing Test cases
-    - [ ] Test scrapping functionality
+    - [x] Test scrapping functionality
     - [ ] Test routes

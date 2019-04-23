@@ -68,13 +68,18 @@ class DatabaseManager:
             return r[0][0]
     
     def filter_command(self, table_name, db_object):
-        return 'SELECT * FROM {table_name} WHERE {fields_match}'.format(
-                    table_name=table_name,
-                    fields_match=' AND '.join([ f'{key}=?' for key in db_object.keys()])
-                )
+        if db_object != {}:
+            return 'SELECT * FROM {table_name} WHERE {fields_match}'.format(
+                        table_name=table_name,
+                        fields_match=' AND '.join([ f'{key}=?' for key in db_object.keys()])
+                    )
+        else:
+           return 'SELECT * FROM {table_name}'.format(
+                        table_name=table_name,
+                    )
 
     
-    def filter(self, table_name, db_object):
+    def filter(self, table_name, db_object={}):
         if self.db.connection and self.db.cursor:
             r = self.db.run_read_sql_command(
                 self.filter_command(table_name, db_object),

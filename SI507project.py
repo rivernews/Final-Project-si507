@@ -3,13 +3,15 @@ import database
 
 import traceback
 
+import flask_server
+
 if __name__ == "__main__":
     try:
-        db_manager = database.DatabaseManager()
-        browser = browser.Browser(db_manager)
+        flask_server.app.run()
         
     except Exception as err:
         traceback.print_tb(err.__traceback__)
         print(err)
     finally:
-        browser.close()
+        # browser.BROWSER.close()
+        pass

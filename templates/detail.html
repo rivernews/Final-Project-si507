@@ -1,0 +1,12 @@
+<h1>{{ company[company_fields.NAME.value] }}</h1>
+
+<h3>Rating/Rank</h3>
+{% for rating in ratings %}
+<ul>
+    <li>
+        <span>{{ rating[rating_fields.SOURCE.value] }}: {{ rating[rating_fields.VALUE.value] }}</span>
+    </li>
+</ul>
+{% endfor %}
+
+<a href="/companies/">Back to company list</a>

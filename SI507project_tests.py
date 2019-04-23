@@ -9,7 +9,6 @@ class TestCases(unittest.TestCase):
     def setUp(self):
         self.db_manager = DatabaseUtil.DatabaseManager()
         self.browser = BrowserUtil.Browser(db_manager=self.db_manager)
-        self.scrapper = WebScrapper(browser=self.browser, db_manager=self.db_manager)
         return super().setUp()
     
     def tearDown(self):
@@ -17,16 +16,15 @@ class TestCases(unittest.TestCase):
         return super().tearDown()
 
     def test_scrap_company_list(self):
-        
-        
+        self.scrapper = WebScrapper(browser=self.browser, db_manager=self.db_manager)
         self.scrapper.fetch_fortune_company_list()
-
         self.assertEqual(
             self.scrapper.company_list[0].lower(),
             'walmart'
         )
     
     def test_scrap_company_rating(self):
+        self.scrapper = WebScrapper(browser=self.browser, db_manager=self.db_manager)
         self.scrapper.fetch_fortune_company_list()
 
         self.assertEqual(
@@ -34,10 +32,10 @@ class TestCases(unittest.TestCase):
             3.2
         )
     
-    def test_company_data_store(self):
+    def test_company_data_store(self, fortune_rank=1):
+        self.scrapper = WebScrapper(browser=self.browser, db_manager=self.db_manager)
         self.scrapper.fetch_fortune_company_list()
         
-        fortune_rank = 1
         company_name = self.scrapper.company_list[fortune_rank - 1]
 
         rating = self.scrapper.get_company_rating(company_name)
@@ -77,6 +75,9 @@ class TestCases(unittest.TestCase):
             elif result[2] == 'fortune 500':
                 self.assertEqual(result[1], fortune_rank, msg='TEST FAILURE: stored fortune rank value not correct.')
 
+    def test_multi_company_data_store(self):
+        for fortune_rank in range(1, 11):
+            self.test_company_data_store(fortune_rank=fortune_rank)
     
 if __name__ == "__main__":
     unittest.main()
