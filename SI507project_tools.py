@@ -1,8 +1,10 @@
+import database
+
 class WebScrapper:
 
-    def __init__(self, browser=None, db=None):
+    def __init__(self, browser=None, db_manager=None):
         self.browser = browser
-        self.db = db
+        self.db_manager = db_manager
     
     def fetch_fortune_company_list(self):
         self.company_list = []
@@ -26,7 +28,65 @@ class WebScrapper:
             span.get_attribute('innerHTML') for span in company_span_list
         ]
 
+    def create_or_update_company(self, company_data={}):
+        if 'id' in company_data:
+            company_id = company_data.pop('id')
+        elif not 'name' in company_data:
+            raise KeyError('ERROR: at least give either name or id when create/update company.')
+        else:
+            query_object = {'name': company_data['name']}
+            if self.db_manager.count(database.Tables.COMPANY.value, query_object) > 0:
+                # user did not pass in company `id`, but the company is already in database
+                company_id = self.db_manager.filter(
+                    database.Tables.COMPANY.value, query_object
+                )[0][database.CompanyTable.ID.value]
+            else:
+                # no company data in database so indeed need to create
+                company_id = self.db_manager.create(database.Tables.COMPANY.value, {
+                    'name': ''
+                })
+
+        if 'companyratings' in company_data:
+            companyratings = company_data.pop('companyratings')
+            
+            if not isinstance(companyratings, list):
+                raise TypeError('ERROR: companyratings should be a list.')
+            
+            for companyrating in companyratings:
+                if not (
+                    'source' in companyrating
+                ):
+                    raise KeyError('ERROR: Please make sure you provide source, sample_date in companyratings.')
+
+                # in case user send in `companyId`; we will assign companyId explicitly
+                companyrating['companyId'] = company_id
+
+                # check if exists; if exists, perform udpate
+                if 'id' in companyrating and self.db_manager.count(database.Tables.COMPANY_RATING.value, {'id': companyrating['id']}) > 0:
+                    del companyrating['id']
+                    self.db_manager.update(database.Tables.COMPANY_RATING.value, companyrating)
+                # if not, create it
+                else:
+                    if 'id' in companyrating:
+                        del companyrating['id']
+                    self.db_manager.create(database.Tables.COMPANY_RATING.value, companyrating)
+
+        if 'hq_location' in company_data:
+            hq_location = company_data.pop('hq_location')
+            # TODO
+
+        if 'home_page' in company_data:
+            home_page = company_data.pop('home_page')
+            # TODO
         
+        # assign value for update/create
+        if company_id != None:
+            self.db_manager.update(database.Tables.COMPANY.value, {
+                **company_data
+            }, company_id)
+        
+        return company_id
+
     
     def get_company_rating(self, company):
 

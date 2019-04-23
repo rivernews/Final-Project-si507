@@ -9,6 +9,7 @@ class Tables(enum.Enum):
     WEBPAGE_CACHE = 'WebpageCache'
     COMPANY_RATING = 'CompanyRating'
 
+
 class Database:
 
     database_file_name = None
@@ -94,6 +95,7 @@ class DatabaseManager:
                     ','.join([ f'{key}=?' for key in db_object.keys()])
                 ),) +
                 # value tuples
+
                 tuple(db_object.values()) + 
                 tuple([pk])
             ])
@@ -126,7 +128,7 @@ class DatabaseManager:
                 print("INFO: create(): object already exist, will do nothing. table={}, object: {}".format(table_name, db_object))
             except Exception as err:
                 print(err)
-            return
+        raise RuntimeError('ERROR: create() failed since database lose connection and cursor.')
     
     def prepare_database_and_schema(self):
         if self.db.exist():
@@ -147,6 +149,8 @@ class DatabaseManager:
                 ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
                     value REAL,
+                    source TEXT,
+                    sample_date DATE DEFAULT (datetime('now','localtime')),
                     companyId INTEGER,
                     
                     FOREIGN KEY (companyId) REFERENCES Company(id)
@@ -163,3 +167,20 @@ class DatabaseManager:
             ])
 
         return self.db
+    
+
+class CompanyTable(enum.Enum):
+    ID = 0
+    NAME = 1
+
+class CompanyRatingTable(enum.Enum):
+    ID = 0
+    VALUE = 1
+    SOURCE = 2
+    SAMPLE_DATE = 3
+    COMPANY_ID = 4
+
+class WebpageCacheTable(enum.Enum):
+    ID = 0
+    URL = 1
+    FILENAME = 2

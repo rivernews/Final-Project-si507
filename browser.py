@@ -50,6 +50,7 @@ class Browser:
             }
         )
         options.add_argument("--incognito")
+        options.add_argument("--headless")
 
         # https://stackoverflow.com/questions/44770796/how-to-make-selenium-not-wait-till-full-page-load-which-has-a-slow-script/44771628
         
