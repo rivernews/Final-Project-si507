@@ -16,19 +16,7 @@ import re
 import time
 
 import database
-
-"""
-    How to scrap a page?
-
-    1. get browser object <----
-    2. request web page
-    3. wait till page load finished or an element shows up or till timeout
-    (3. execute javascript piece if needed): browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    4. browser.find_elements_by_class_name('...')
-    5. access element's attribute value
-    6. store value data in python data structure
-    7. cache save value
-"""
+import settings as Settings
 
 class Browser:
     
@@ -50,7 +38,8 @@ class Browser:
             }
         )
         options.add_argument("--incognito")
-        # options.add_argument("--headless")
+        if Settings.BROWSER_HEADLESS:
+            options.add_argument("--headless")
 
         # https://stackoverflow.com/questions/44770796/how-to-make-selenium-not-wait-till-full-page-load-which-has-a-slow-script/44771628
         
@@ -62,26 +51,30 @@ class Browser:
         return browser
     
     def consume_infinite_scroll_page(self,
-        infinite_scroll_smooth,
         infinite_scroll_spinner_css_selector,
         infinite_scroll_element_css_selector,
         infinite_scroll_timeout,
+        infinite_scroll_element_maximum_amount,
         infinite_scroll_maximum_scroll_times,
     ):
         scroll_times = 0
         visible_spinner_timeout_times = 0
         visible_spinner_timeout_maximum_times = 2
         element_list = []
+
+        # smooth scrolling requires a longer time out since scrolling will take more time
+        short_timeout = 3.5 if not Settings.BROWSER_SMOOTH_SCROLLING else 5
         browser_short_pauser = WebDriverWait(
-            self.browser, 3.5
+            self.browser, short_timeout
         )
         browser_pauser = WebDriverWait(
             self.browser, infinite_scroll_timeout
         )
+
         while True:
             # scroll down
             print('INFO: scrolling down.')
-            if infinite_scroll_smooth:
+            if Settings.BROWSER_SMOOTH_SCROLLING:
                 self.browser.execute_script("window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });")
             else:
                 self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -137,7 +130,7 @@ class Browser:
                 infinite_scroll_element_css_selector,
             )
             print(f'INFO: infinite scroll items {len(element_list)} -> {len(elements_list_in_page)}')
-            if len(elements_list_in_page) > len(element_list):
+            if len(elements_list_in_page) > len(element_list) and len(elements_list_in_page) <= infinite_scroll_element_maximum_amount:
                 element_list = elements_list_in_page
                 continue
             else:
@@ -148,10 +141,10 @@ class Browser:
     
     def request_page(self,
             infinite_scroll,
-            infinite_scroll_smooth,
             infinite_scroll_spinner_css_selector,
             infinite_scroll_element_css_selector,
             infinite_scroll_timeout,
+            infinite_scroll_element_maximum_amount,
             infinite_scroll_maximum_scroll_times,
             page_url="http://fortune.com/fortune500/list/",
             page_name='',
@@ -177,10 +170,10 @@ class Browser:
 
                 if infinite_scroll and infinite_scroll_spinner_css_selector and infinite_scroll_element_css_selector:
                     self.consume_infinite_scroll_page(
-                        infinite_scroll_smooth,
                         infinite_scroll_spinner_css_selector,
                         infinite_scroll_element_css_selector,
                         infinite_scroll_timeout,
+                        infinite_scroll_element_maximum_amount,
                         infinite_scroll_maximum_scroll_times,
                     )
 
@@ -208,13 +201,16 @@ class Browser:
             base = base_element
         else:
             base = self.browser
-        
-        if many:
-            targets = base.find_elements_by_css_selector(selector)
-        else:
-            targets = base.find_element_by_css_selector(selector)
-            
-        return targets
+
+        try:
+            if many:
+                targets = base.find_elements_by_css_selector(selector)
+            else:
+                targets = base.find_element_by_css_selector(selector)
+                
+            return targets
+        except NoSuchElementException as e:
+            return None
     
     def close(self):
         self.browser.quit()

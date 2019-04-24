@@ -1,4 +1,5 @@
 import database
+import settings as Settings
 
 class WebScrapper:
 
@@ -22,7 +23,6 @@ class WebScrapper:
                 page_name='fortune-500',
                 
                 infinite_scroll=True,
-                infinite_scroll_smooth=False,
                 infinite_scroll_spinner_css_selector=(
                     'div.F500-spinner'
                 ),
@@ -153,12 +153,15 @@ class WebScrapper:
             )
             if company_name_anchor.get_attribute('innerHTML').strip().lower() == company_name.lower():
                 rating_span = self.browser.access_targets('span.bigRating', base_element=company_header, many=False)
+                if rating_span == None:
+                    # Not yet rated, like https://www.glassdoor.com/Reviews/plains-gp-holdings-reviews-SRCH_KE0,18.htm
+                    return -1
                 rating = float(rating_span.get_attribute('innerHTML').strip())
                 return rating
 
         return rating
     
-    def batch_scrap_and_store_company_data(self, fortune_rank_range=[1,10], process_amount_limit=1000):
+    def batch_scrap_and_store_company_data(self, fortune_rank_range=[1,10]):
         if len(self.company_list) == 0:
             self.fetch_fortune_company_list()
         
@@ -166,11 +169,14 @@ class WebScrapper:
 
         loop_range = None
         if isinstance(fortune_rank_range, list):
-            if len(fortune_rank_range) == 2 and fortune_rank_range[1] <= process_amount_limit:
+            if len(fortune_rank_range) == 2 and fortune_rank_range[1] <= len(self.company_list):
                 loop_range = range(fortune_rank_range[0], fortune_rank_range[1] + 1)
+            elif len(fortune_rank_range) == 1:
+                # by default we will fetch as much companies as we can if amount/end rank exceeded `self.company_list`
+                loop_range = range(fortune_rank_range[0], len(self.company_list) + 1)
             else:
-                # by default we will fetch all 500 companies
-                loop_range = range(1, process_amount_limit + 1)
+                loop_range = range(1, len(self.company_list) + 1)
+        # only work on one company given the specific rank number
         elif isinstance(fortune_rank_range, int):
             loop_range = range(fortune_rank_range, fortune_rank_range + 1)
         
@@ -211,19 +217,19 @@ class WebScrapper:
     def navigate_to(
         self, url, page_name,
         infinite_scroll=False,
-        infinite_scroll_smooth=True,
         infinite_scroll_spinner_css_selector='',
         infinite_scroll_element_css_selector='',
         infinite_scroll_timeout=20,
+        infinite_scroll_element_maximum_amount=1000,
         infinite_scroll_maximum_scroll_times=10,
     ):
         self.browser.request_page(
             page_url=url, page_name=page_name,
             infinite_scroll=infinite_scroll,
-            infinite_scroll_smooth=infinite_scroll_smooth,
             infinite_scroll_spinner_css_selector=infinite_scroll_spinner_css_selector,
             infinite_scroll_element_css_selector=infinite_scroll_element_css_selector,
             infinite_scroll_timeout=infinite_scroll_timeout,
+            infinite_scroll_element_maximum_amount=infinite_scroll_element_maximum_amount,
             infinite_scroll_maximum_scroll_times=infinite_scroll_maximum_scroll_times,
         )
     

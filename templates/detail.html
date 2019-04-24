@@ -5,7 +5,12 @@
 </h3>
 
 <h3>
-    Glassdoor Rating: {{ ratings_table['glassdoor'] }}
+    Glassdoor Rating:
+    {% if ratings_table['glassdoor'] >= 0 %}
+    {{ ratings_table['glassdoor'] }}
+    {% else %}
+    No rating data yet
+    {% endif %}
 </h3>
 
 <footer>

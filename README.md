@@ -17,10 +17,42 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 1. First, you should install all requirements with `pip install -r requirements.txt`). Also make sure you are running with Python 3.
 2. At the project root directory, run `python flask_server.py` to start the web server locally and navigate in your browser to `http://127.0.0.1:5000/`.
 
-## How to use
+## How to use I - viewing rating data in flask web app
 
-1. After you start running the web server and navigate to `http://127.0.0.1:5000/`, you  
-1. [ ] TODO (Optional): Markdown syntax to include an screenshot/image: ![alt text](image.jpg)
+1. After you start running the web server and navigate to `http://127.0.0.1:5000/`, you can click the link `Try out the company list` to see a list of companies of Fortune 500.
+
+*Home Page of the Flask Web App*
+![Home Page](doc/img/homepage.png)
+
+*Company List Page*
+
+![Company List Page](doc/img/company-list-page.png)
+
+2. For each company you can clik on the company name to go to their detail page. The detail page shows the Fortune 500 ranking of the company, along with its glassdoor rating.
+
+*Detail Page*
+
+![Company Detail Page](doc/img/detail-page.png)
+
+## How to use II - tryout the web scrapper yourself
+
+A big part of this project is web scrapping, so if you want to see how it actually looks like for Selenium to do cross site scrapping & dealing with Ajax infinite scroll webpage, follow the steps below:
+
+1. Go to the project root directory, also make sure you also have a virtual environment activated, and did `pip install -r requirements.txt`.
+1. The `settings.py` in project root directory contains several options for how you want the Selenium browser to scrap:
+    - `BROWSER_HEADLESS`: if you set to `True`, Selenium will not show the browser window while crawling. I recommend you set to `False` (be default) so you can see how the crawler is doing under the hood. But you can set to `False` if you just want to scrap the data and find the browser window annoying. Setting it to `False` will hide the browser window and speed up the crawling.
+    - `BROWSER_SMOOTH_SCROLLING`: it's only meaningful if `BROWSER_HEADLESS` is set to `False`. Enabling this will let the Selenium browser scroll smoothly instead of an instant jump. I recommend setting it to `True` for you to see how the crawler is doing under the hood.
+    - `SCRAP_COMPANY_AMOUNT`: you can choose how many company you want to scrap. For example. if you give `20`, the crawler will scrap companies data from Fortune-500 rank 1st to 20th. The crawler always starts scrapping from the rank 1st company of Fortune-500.
+1. At root project directory, run `python SI507project.py`. 
+    - ⚠️ Note that the crawler has caching mechanism so it will not go through the entire process at first. It will use the existing database `my-database.sqlite` in the project root directory. If a web page is cached and has an entry in database, the crawler will not request the page and will use the HTML file in the `cache/` directory instead. Likewise, if a company or a rating data is already in database, it will not crawl the webpage and will use the data from database instead.
+1. In order to see the entire process of how crawler interact with the webpage, I recommend you delete the database to start over. Follow the instructions below:
+    1. Delete the database `my-database.sqlite` in the project root directory.
+    1. (Optional) you can delete all HTML files under directory `cache/`, but it does not matter. If the crawler cannot find a cache in database, it will request and overwrite the HTML file anyway.
+    1. You probably want to set `SCRAP_COMPANY_AMOUNT` in the `settings.py` (in project root direocty) to a smaller number to just see how things look like to avoid long wait. I recommend 5. The crawler will cache all company and webpage data so feel free to increase this number later and re-run the crawler.
+    1. TO run the crawler, at root project directory, run `python SI507project.py`.
+    1. The overall process is like this: the crawler 1) scraps Fortune 500 list, 2) for each company, query the company in glassdoor, retrieve the glassdoor page and extract the rating. The webpage of Fortune 500 list has infinite scroll, and in fact, the page contains 1000 companies in total. By default the crawler will wait till all 1000 companies are loaded, then cache the page and move on. It might take 1~2 minutes for all the 1000 companies are loaded.
+    1. Once you run the crawler, you can observe the Selenium browser e.g. how it scrolls down, open new webpage.... Also you can observe the files under directory `cache/` and see the cached webpage HTML files. You can also use database client and open the database `my-database.sqlite` to see how company data are stored.
+
 
 ## Routes in this application
 - `/` -> this is the home page

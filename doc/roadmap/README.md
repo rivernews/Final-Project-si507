@@ -31,3 +31,6 @@
 - Wrap up
     - [ ] ➡️ Distinguish `SI507project.py` & `flask_server.py`, and give how to explanation in readme.
     - [ ] ️️➡️ Checkpoint: see what's TODO in "Code Requirements for Grading". Then redefine.
+    - [ ] Debug crawler. We can now only get 115 companies.
+
+
