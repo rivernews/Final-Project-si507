@@ -43,12 +43,19 @@ def detail_company(id):
     rating_result_list = db_manager.filter(database.Tables.COMPANY_RATING.value, {
         'companyId': id
     })
+    ratings_table = {}
+    for rating_result in rating_result_list:
+        ratings_table[
+            rating_result[database.CompanyRatingTable.SOURCE.value]
+        ] = rating_result[
+            database.CompanyRatingTable.VALUE.value
+        ]
+    ratings_table['fortune 500'] = int(ratings_table['fortune 500'])
     
     context = {
         'company': company_result_list[0],
         'company_fields': database.CompanyTable,
-        'ratings': rating_result_list,
-        'rating_fields': database.CompanyRatingTable,
+        'ratings_table': ratings_table,
     }
 
     return render_template('detail.html', **context)

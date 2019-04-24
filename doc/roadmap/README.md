@@ -11,11 +11,23 @@
         - [x] When selenium navigate_to is called, check if the url is in db
     - [x] Store data in database using database manager class.
     - [x] (optional: store web page in database)
-    - [x] Scrap all 500 / or at least multiple companies in database.
-- Flask app🔥
-    - `/`: 🔥home page
+    - [x] Scrap at least multiple companies in database.
+    - 🔥Scrap all 500 companies in database. Particularlyy look at `batch_scrap_company_data()` and how to test it.
+        - [ ] The fortune 500 uses Ajax for the rest of the company list. We have to use ways like scroll in selenium in order to get the entire list.
+            - We need to do this several phases: 1) get url ... wait page finish loading 2) scroll down 3) wait 2 sec 4) expect spinner 
+            - 5) if got spinner, then "wait till it's gone", then wait .5~1 more sec 6) compare if currentCompanyList.len < pageCompanyList.len, then keep loading more, loop and repeat 2) - 5)
+                - if company list did not grow, end #
+            - 6) if no spinner, <we might wait once again>, or we see this as end & no more Ajax. #
+                - if company list grow, however, then repeat again from 2)
+        - [ ] (optional) speed up selenium by not waiting till page load entirely. Use `none` and wait for target element instead.
+- Flask app
+    - `/`: home page
     - `/companies/`: master view
     - `/companies/<int: id>`: detail view
 - Writing Test cases
     - [x] Test scrapping functionality
-    - [ ] Test routes
+    - [ ] 🔥Test routes
+
+- Wrap up
+    - [ ] ➡️ Distinguish `SI507project.py` & `flask_server.py`, and give how to explanation in readme.
+    - [ ] ️️➡️ Checkpoint: see what's TODO in "Code Requirements for Grading". Then redefine.

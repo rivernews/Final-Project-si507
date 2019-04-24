@@ -14,12 +14,12 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 
 ## How to run
 
-1. First, you should install all requirements with `pip install -r requirements.txt`)
-2. [ ] TODO
+1. First, you should install all requirements with `pip install -r requirements.txt`). Also make sure you are running with Python 3.
+2. At the project root directory, run `python flask_server.py` to start the web server locally and navigate in your browser to `http://127.0.0.1:5000/`.
 
 ## How to use
 
-1. [ ] TODO
+1. After you start running the web server and navigate to `http://127.0.0.1:5000/`, you  
 1. [ ] TODO (Optional): Markdown syntax to include an screenshot/image: ![alt text](image.jpg)
 
 ## Routes in this application
@@ -79,37 +79,37 @@ Please check the requirements you have accomplished in your code as demonstrated
 Below is a list of the requirements listed in the rubric for you to copy and paste.  See rubric on Canvas for more details.
 
 ### General
-- [ ] Project is submitted as a Github repository
-- [ ] Project includes a working Flask application that runs locally on a computer
-- [ ] Project includes at least 1 test suite file with reasonable tests in it.
-- [ ] Includes a `requirements.txt` file containing all required modules to run program
-- [ ] Includes a clear and readable README.md that follows this template
-- [ ] Includes a sample .sqlite/.db file
+- [x] Project is submitted as a Github repository
+- [x] Project includes a working Flask application that runs locally on a computer
+- [x] Project includes at least 1 test suite file with reasonable tests in it.
+- [x] Includes a `requirements.txt` file containing all required modules to run program
+- [x] Includes a clear and readable README.md that follows this template
+- [x] Includes a sample .sqlite/.db file
 - [x] Includes a diagram of your database schema
-- [ ] Includes EVERY file needed in order to run the project
+- [x] Includes EVERY file needed in order to run the project
 - [ ] Includes screenshots and/or clear descriptions of what your project should look like when it is working
 
 ### Flask Application
-- [ ] Includes at least 3 different routes
-- [ ] View/s a user can see when the application runs that are understandable/legible for someone who has NOT taken this course
-- [ ] Interactions with a database that has at least 2 tables
-- [ ] At least 1 relationship between 2 tables in database
-- [ ] Information stored in the database is viewed or interacted with in some way
+- [x] Includes at least 3 different routes
+- [x] View/s a user can see when the application runs that are understandable/legible for someone who has NOT taken this course
+- [x] Interactions with a database that has at least 2 tables
+- [x] At least 1 relationship between 2 tables in database
+- [x] Information stored in the database is viewed or interacted with in some way
 
 ### Additional Components (at least 6 required)
-- [ ] **Use of a new module**
+- [x] **Use of a new module**
 - [ ] Use of a second new module
-- [ ] Object definitions using inheritance (indicate if this counts for 2 or 3 of the six requirements in a parenthetical)
+- [x] Object definitions using inheritance (indicate if this counts for 2 or 3 of the six requirements in a parenthetical)
 - [ ] A many-to-many relationship in your database structure
 - [ ] At least one form in your Flask application
-- [ ] Templating in your Flask application
+- [x] Templating in your Flask application
 - [ ] **Inclusion of JavaScript files in the application**
-- [ ] **Links in the views of Flask application page/s**
+- [x] **Links in the views of Flask application page/s**
 - [ ] Relevant use of `itertools` and/or `collections`
-- [ ] **Sourcing of data using web scraping**
+- [x] **Sourcing of data using web scraping**
 - [ ] **Sourcing of data using web REST API requests**
 - [ ] Sourcing of data using user input and/or a downloaded .csv or .json dataset
-- [ ] Caching of data you continually retrieve from the internet in some way
+- [x] Caching of data you continually retrieve from the internet in some way
 
 ### Submission
 - [ ] I included a link to my GitHub repository with the correct permissions on Canvas! (Did you though? Did you actually? Are you sure you didn't forget?)

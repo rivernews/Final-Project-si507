@@ -1,12 +1,13 @@
 <h1>{{ company[company_fields.NAME.value] }}</h1>
 
-<h3>Rating/Rank</h3>
-{% for rating in ratings %}
-<ul>
-    <li>
-        <span>{{ rating[rating_fields.SOURCE.value] }}: {{ rating[rating_fields.VALUE.value] }}</span>
-    </li>
-</ul>
-{% endfor %}
+<h3>
+    Fortune-500 Rank: {{ ratings_table['fortune 500'] }}
+</h3>
 
-<a href="/companies/">Back to company list</a>
+<h3>
+    Glassdoor Rating: {{ ratings_table['glassdoor'] }}
+</h3>
+
+<footer>
+    <a href="/companies/">Back to company list</a>
+</footer>

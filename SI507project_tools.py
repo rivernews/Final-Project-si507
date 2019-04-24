@@ -5,10 +5,10 @@ class WebScrapper:
     def __init__(self, browser=None, db_manager=None):
         self.browser = browser
         self.db_manager = db_manager
-    
-    def fetch_fortune_company_list(self):
         self.company_list = []
-
+    
+    def fetch_fortune_company_list(self, is_get_all=False):
+        self.company_list = []
         # locate the company in the page
         css_selector = (
             'ul.company-list ' +
@@ -16,10 +16,26 @@ class WebScrapper:
         )
 
         # navigate to target page
-        self.navigate_to(
-            'http://fortune.com/fortune500/list/',
-            page_name='fortune-500'
-        )
+        if is_get_all:
+            self.navigate_to(
+                'http://fortune.com/fortune500/list/',
+                page_name='fortune-500',
+                
+                infinite_scroll=True,
+                infinite_scroll_smooth=False,
+                infinite_scroll_spinner_css_selector=(
+                    'div.F500-spinner'
+                ),
+                infinite_scroll_element_css_selector=(
+                    'ul.company-list li'
+                ),
+                infinite_scroll_maximum_scroll_times=100
+            )
+        else:
+            self.navigate_to(
+                'http://fortune.com/fortune500/list/',
+                page_name='fortune-500',
+            )
 
         # get the company name list
         
@@ -88,17 +104,38 @@ class WebScrapper:
         return company_id
 
     
-    def get_company_rating(self, company):
+    def get_company_glassdoor_rating(self, company_name):
+        
+        # check if any rating exists in database; if so than just use database data.
+        company = None
+        result_list = self.db_manager.filter(database.Tables.COMPANY.value, {
+            'name': company_name
+        })
+        if len(result_list) > 0:
+            company = result_list[0]
+        else:
+            print(f'WARNING: company = {company_name} is not in database, so cannot lookup glassdoor rating for it.')
+            return
+        
+        glassdoor_company_rating = None
+        result_list = self.db_manager.filter(database.Tables.COMPANY_RATING.value, {
+            'companyId': company[database.CompanyTable.ID.value],
+            'source': 'glassdoor'
+        })
+        if len(result_list) > 0:
+            glassdoor_company_rating = result_list[0]
+            return glassdoor_company_rating[database.CompanyRatingTable.VALUE.value]
 
+        # rating for company is not in database, so we now scrap it
         rating = 0.0
 
         company_header_css_selector = (
             'div[id=ReviewSearchResults] ' +
             'div.header.cell.info'
         )
-        sanitized_company_name = company.strip().replace(' ', '-')
+        sanitized_company_name = company_name.strip().replace(' ', '-')
         self.navigate_to(
-            self.generate_glassdoor_company_query_url(company),
+            self.generate_glassdoor_company_query_url(company_name),
             page_name=f'gd-{sanitized_company_name}'
         )
 
@@ -114,15 +151,81 @@ class WebScrapper:
                 base_element=company_header,
                 many=False
             )
-            if company_name_anchor.get_attribute('innerHTML').strip().lower() == company.lower():
+            if company_name_anchor.get_attribute('innerHTML').strip().lower() == company_name.lower():
                 rating_span = self.browser.access_targets('span.bigRating', base_element=company_header, many=False)
                 rating = float(rating_span.get_attribute('innerHTML').strip())
                 return rating
 
         return rating
     
-    def navigate_to(self, url, page_name):
-        self.browser.request_page(page_url=url, page_name=page_name)
+    def batch_scrap_and_store_company_data(self, fortune_rank_range=[1,10], process_amount_limit=1000):
+        if len(self.company_list) == 0:
+            self.fetch_fortune_company_list()
+        
+        scrapped_company_id_list = []
+
+        loop_range = None
+        if isinstance(fortune_rank_range, list):
+            if len(fortune_rank_range) == 2 and fortune_rank_range[1] <= process_amount_limit:
+                loop_range = range(fortune_rank_range[0], fortune_rank_range[1] + 1)
+            else:
+                # by default we will fetch all 500 companies
+                loop_range = range(1, process_amount_limit + 1)
+        elif isinstance(fortune_rank_range, int):
+            loop_range = range(fortune_rank_range, fortune_rank_range + 1)
+        
+        if loop_range:
+            for fortune_rank in loop_range:
+                company_name = self.company_list[fortune_rank - 1]
+                
+                # query company object in database
+                company_result_list = self.db_manager.filter(database.Tables.COMPANY.value, {
+                    'name': company_name
+                })
+                if len(company_result_list) == 0:
+                    company_id = self.create_or_update_company({ 'name': company_name })
+                else:
+                    company_id = company_result_list[0][database.CompanyTable.ID.value]
+
+                rating = self.get_company_glassdoor_rating(company_name)
+
+                self.create_or_update_company({
+                    'id': company_id,
+                    'name': company_name,
+                    'companyratings': [
+                        {
+                            'source': 'glassdoor',
+                            'value': rating
+                        },
+                        {
+                            'source': 'fortune 500',
+                            'value': fortune_rank
+                        }
+                    ]
+                })
+
+                scrapped_company_id_list.append(company_id)
+            
+            return scrapped_company_id_list
+    
+    def navigate_to(
+        self, url, page_name,
+        infinite_scroll=False,
+        infinite_scroll_smooth=True,
+        infinite_scroll_spinner_css_selector='',
+        infinite_scroll_element_css_selector='',
+        infinite_scroll_timeout=20,
+        infinite_scroll_maximum_scroll_times=10,
+    ):
+        self.browser.request_page(
+            page_url=url, page_name=page_name,
+            infinite_scroll=infinite_scroll,
+            infinite_scroll_smooth=infinite_scroll_smooth,
+            infinite_scroll_spinner_css_selector=infinite_scroll_spinner_css_selector,
+            infinite_scroll_element_css_selector=infinite_scroll_element_css_selector,
+            infinite_scroll_timeout=infinite_scroll_timeout,
+            infinite_scroll_maximum_scroll_times=infinite_scroll_maximum_scroll_times,
+        )
     
     def generate_glassdoor_company_query_url(self, company_name):
         template_url = '''https://www.glassdoor.com/Reviews/company-reviews.htm?suggestCount=10&suggestChosen=false&clickSource=searchBtn&typedKeyword=%s&sc.keyword=%s&locT=C&locId=&jobType='''
