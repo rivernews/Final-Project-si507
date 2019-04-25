@@ -14,8 +14,9 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 
 ## How to run
 
-1. First, you should install all requirements with `pip install -r requirements.txt`). Also make sure you are running with Python 3.
-2. At the project root directory, run `python flask_server.py` to start the web server locally and navigate in your browser to `http://127.0.0.1:5000/`.
+1. We recommend you use virtual environment. If so, create one and activate it.
+1. Install all requirements with `pip install -r requirements.txt`. Also make sure you are running with Python 3.
+1. At the project root directory, run `python flask_server.py` to start the web server locally and navigate in your browser to `http://127.0.0.1:5000/`.
 
 ## How to use (1/2) - viewing rating data in flask web app
 
