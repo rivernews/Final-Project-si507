@@ -127,7 +127,7 @@ class WebScrapper:
             return glassdoor_company_rating[database.CompanyRatingTable.VALUE.value]
 
         # rating for company is not in database, so we now scrap it
-        rating = 0.0
+        rating = -1
 
         company_header_css_selector = (
             'div[id=ReviewSearchResults] ' +
@@ -143,23 +143,53 @@ class WebScrapper:
         company_header_list = self.browser.access_targets(
             company_header_css_selector
         )
-        for company_header in company_header_list:
+        if len(company_header_list) > 0:
+            for company_header in company_header_list:
 
-            # use the target company only
-            company_name_anchor = self.browser.access_targets(
-                'div.margBotXs a',
-                base_element=company_header,
-                many=False
-            )
-            if company_name_anchor.get_attribute('innerHTML').strip().lower() == company_name.lower():
-                rating_span = self.browser.access_targets('span.bigRating', base_element=company_header, many=False)
-                if rating_span == None:
-                    # Not yet rated, like https://www.glassdoor.com/Reviews/plains-gp-holdings-reviews-SRCH_KE0,18.htm
-                    return -1
-                rating = float(rating_span.get_attribute('innerHTML').strip())
-                return rating
+                # use the target company only
+                company_name_anchor = self.browser.access_targets(
+                    'div.margBotXs a',
+                    base_element=company_header,
+                    many=False
+                )
+                if company_name_anchor.get_attribute('innerHTML').strip().lower() == company_name.lower():
+                    rating_span = self.browser.access_targets('div.ratingsSummary span.bigRating', base_element=company_header, many=False)
+                    if rating_span == None:
+                        # Not yet rated, like https://www.glassdoor.com/Reviews/plains-gp-holdings-reviews-SRCH_KE0,18.htm
+                        return -1
+                    rating = float(rating_span.get_attribute('innerHTML').strip())
+                    return rating
+            
+            # no company header matches company name, then just use first search result
+            company_header = company_header_list[0]
+            rating_span = self.browser.access_targets('div.ratingsSummary span.bigRating', base_element=company_header, many=False)
+            
+            if rating_span == None:
+                # We guess the 1st result is the correct company
+                # but the company has no rating data yet
+                # e.g. https://www.glassdoor.com/Reviews/united-continental-holdings-reviews-SRCH_KE0,27.htm
+                print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {self.generate_glassdoor_company_query_url(company_name)}')
+                return -1
 
-        return rating
+            rating = float(rating_span.get_attribute('innerHTML').strip())
+            return rating
+
+        else:
+            # glassdoor might be single result page so have a different layout
+            # like https://www.glassdoor.com/Overview/Working-at-Fannie-Mae-EI_IE247.11,21.htm
+            rating_div = self.browser.access_targets((
+                'div.ratingInfo > div.ratingNum'
+            ), many=False)
+            
+            if rating_div == None:
+                # exception, not sure what's going on here & might need to look at the webpage to actually see what it looks like
+                # like https://www.glassdoor.com/Reviews/costco-reviews-SRCH_KE0,6.htm
+                # The company name in Fortune 500 is Costco, but in glassdoor the name is `Costco Wholesale`
+                print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {self.generate_glassdoor_company_query_url(company_name)}')
+                return -1
+            
+            rating = float(rating_div.get_attribute('innerHTML').strip())
+            return rating
     
     def batch_scrap_and_store_company_data(self, fortune_rank_range=[1,10]):
         if len(self.company_list) == 0:

@@ -37,5 +37,7 @@
         - [ ] Submit
 
 - Small issues
-    - [ ] Some company gets rating of 0.0, but in fact the rating is not 0. For example `Ford Motor` gets a rating of 0 but in fact it's 3.9. Pay attention to the company name - in glassdoor page the company name is actually `Ford Motor Company`.
+    - [ ] Some company gets rating of 0.0, but in fact the rating is not 0. For example [`Ford Motor`](https://www.glassdoor.com/Reviews/ford-motor-reviews-SRCH_KE0,10.htm) gets a rating of 0 but in fact it's 3.9. Pay attention to the company name - in glassdoor page the company name is actually `Ford Motor Company`. 
+    - [ ] Some company page in glassdoor has a different layout, for example [this company](https://www.glassdoor.com/Overview/Working-at-Fannie-Mae-EI_IE247.11,21.htm).
+    - [x] Only get 150 of the companies from Fortune 500 webpage. --> delete the entry for fortune 500 webpage in `WebpageCache`.
 
