@@ -26,11 +26,16 @@
     - `/companies/<int: id>`: detail view
 - Writing Test cases
     - [x] Test scrapping functionality
-    - [ ] 🔥Test routes
+    - [ ] Test routes
 
 - Wrap up
-    - [ ] ➡️ Distinguish `SI507project.py` & `flask_server.py`, and give how to explanation in readme.
-    - [ ] ️️➡️ Checkpoint: see what's TODO in "Code Requirements for Grading". Then redefine.
-    - [ ] Debug crawler. We can now only get 115 companies.
+    - [x] ➡️ Distinguish `SI507project.py` & `flask_server.py`, and give how to explanation in readme.
+    - [x] ️️➡️ Checkpoint: see what's TODO in "Code Requirements for Grading". Then redefine.
+    - [x] Debug crawler. We can now only get 115 companies.
+    - Finalize final project requirements
+        - [ ] 🔥 Documentation
+        - [ ] Submit
 
+- Small issues
+    - [ ] Some company gets rating of 0.0, but in fact the rating is not 0. For example `Ford Motor` gets a rating of 0 but in fact it's 3.9. Pay attention to the company name - in glassdoor page the company name is actually `Ford Motor Company`.
 

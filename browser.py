@@ -63,7 +63,7 @@ class Browser:
         element_list = []
 
         # smooth scrolling requires a longer time out since scrolling will take more time
-        short_timeout = 3.5 if not Settings.BROWSER_SMOOTH_SCROLLING else 5
+        short_timeout = 3.5 if not Settings.BROWSER_SMOOTH_SCROLLING else 5.5
         browser_short_pauser = WebDriverWait(
             self.browser, short_timeout
         )
