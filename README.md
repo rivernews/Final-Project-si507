@@ -29,7 +29,7 @@ We will do cross-site scrapping - first scrap the list of fortune 500, then find
 
 ![Company List Page](doc/img/company-list-page.png)
 
-2. For each company you can clik on the company name to go to their detail page. The detail page shows the Fortune 500 ranking of the company, along with its glassdoor rating.
+2. For each company you can click on the company name to go to their detail page. The detail page shows the Fortune 500 ranking of the company, along with its glassdoor rating.
 
 *Detail Page*
 
@@ -42,14 +42,14 @@ A big part of this project is web scrapping, so if you want to see how it actual
 1. Go to the project root directory, also make sure you also have a virtual environment activated, and did `pip install -r requirements.txt`.
 1. The `settings.py` in project root directory contains several options for how you want the Selenium browser to scrap:
     - `BROWSER_HEADLESS`: if you set to `True`, Selenium will not show the browser window while crawling. I recommend you set to `False` (be default) so you can see how the crawler is doing under the hood. But you can set to `False` if you just want to scrap the data and find the browser window annoying. Setting it to `False` will hide the browser window and speed up the crawling.
-    - `BROWSER_SMOOTH_SCROLLING`: it's only meaningful if `BROWSER_HEADLESS` is set to `False`. Enabling this will let the Selenium browser scroll smoothly instead of an instant jump. I recommend setting it to `True` for you to see how the crawler is doing under the hood.
+    - `BROWSER_SMOOTH_SCROLLING`: it's only meaningful if `BROWSER_HEADLESS` is set to `False`. Enabling this will let the Selenium browser scroll smoothly instead of an instant jump when consuming infinite scroll webpage. I recommend setting it to `True` for you to see how the crawling process is done.
     - `SCRAP_COMPANY_AMOUNT`: you can choose how many company you want to scrap. For example. if you give `20`, the crawler will scrap companies data from Fortune-500 rank 1st to 20th. The crawler always starts scrapping from the rank 1st company of Fortune-500.
 1. At root project directory, run `python SI507project.py`. 
-    - ⚠️ Note that the crawler has caching mechanism so it will not go through the entire process at first. It will use the existing database `my-database.sqlite` in the project root directory. If a web page is cached and has an entry in database, the crawler will not request the page and will use the HTML file in the `cache/` directory instead. Likewise, if a company or a rating data is already in database, it will not crawl the webpage and will use the data from database instead.
-1. In order to see the entire process of how crawler interact with the webpage, I recommend you delete the database to start over. Follow the instructions below:
+    - ⚠️ Note that the crawler has caching mechanism so it will not go through the entire process at first. But you can observe where the crawler is using cached webpages and data in database. It will use the data in the existing database `my-database.sqlite` in the project root directory. If a web page is cached and has an entry in database, the crawler will not request the page and will use the HTML file in the `cache/` directory instead. Likewise, if a company or a rating data is already in database, it will not crawl the webpage and will use the data from database instead.
+1. In order to see the entire process of how crawler interact with the webpage, I recommend you to let the crawler start over w/o using cache. Follow the instructions below:
     1. Delete the database `my-database.sqlite` in the project root directory.
-    1. (Optional) you can delete all HTML files under directory `cache/`, but it does not matter. If the crawler cannot find a cache in database, it will request and overwrite the HTML file anyway.
-    1. Set `SCRAP_COMPANY_AMOUNT` in the `settings.py` (in project root direocty) to a smaller number to just see how things look like to avoid long wait. I recommend 5. The crawler will cache all company and webpage data so feel free to increase this number later and re-run the crawler.
+    1. (Optional) you can delete all HTML files under directory `cache/`, but it does not matter. If the crawler cannot find a cache entry in database, it will request and overwrite the HTML file anyway.
+    1. Set `SCRAP_COMPANY_AMOUNT` in the `settings.py` (in project root direocty) to a smaller number to  try things out while avoiding long wait. I recommend setting this number as 5. The crawler will cache all company and webpage data so feel free to increase this number later and re-run the crawler. This number shall not exceed 1000. Since the project is for Fortune 500, I recommend to increase this number to 500 eventually if you want to test the whole process.
     1. TO run the crawler, at root project directory, run `python SI507project.py`.
 
 More tips on trying out the crawler:
