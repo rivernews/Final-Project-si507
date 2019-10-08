@@ -28,7 +28,7 @@ class TestCases(unittest.TestCase):
         self.scrapper.fetch_fortune_company_list()
 
         self.assertEqual(
-            self.scrapper.get_company_glassdoor_rating(self.scrapper.company_list[0]),
+            self.scrapper.get_company_glassdoor_info(self.scrapper.company_list[0])['rating'],
             3.2
         )
     
@@ -37,7 +37,7 @@ class TestCases(unittest.TestCase):
         
         company_id = self.scrapper.batch_scrap_and_store_company_data(fortune_rank)[0]
         company_name = self.scrapper.company_list[fortune_rank - 1]
-        glassdoor_rating = self.scrapper.get_company_glassdoor_rating(company_name)
+        glassdoor_rating = self.scrapper.get_company_glassdoor_info(company_name)['rating']
 
         # Test company
         result_list = self.db_manager.filter(DatabaseUtil.Tables.COMPANY.value, {

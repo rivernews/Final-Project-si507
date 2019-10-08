@@ -3,3 +3,5 @@ BROWSER_HEADLESS = False
 SCRAP_COMPANY_AMOUNT = 500
 
 SQLITE_DATABASE_FILENAME = 'my-database.umich-cf-fall-19.sqlite'
+
+IS_FORTUNE_RANK = False

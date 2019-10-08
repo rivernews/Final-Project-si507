@@ -23,7 +23,7 @@ class WebScrapper:
 
         company_tr_list = self.browser.access_targets(css_selector)
 
-
+        print('INFO: start fetching company list from umich career fair web page ...')
         for tr in company_tr_list:
             tds = tr.find_elements_by_css_selector('td')
 
@@ -117,22 +117,22 @@ class WebScrapper:
 
         if 'hq_location' in company_data:
             hq_location = company_data.pop('hq_location')
-            # TODO
+            # TODO: handle 1 to 1 relationship
 
         if 'home_page' in company_data:
             home_page = company_data.pop('home_page')
-            # TODO
+            # TODO: handle 1 to 1 relationship
         
         # assign value for update/create
         if company_id != None:
             self.db_manager.update(database.Tables.COMPANY.value, {
-                **company_data
+                **company_data # update the rest of the company data (we use pop() for speical fields we want to handle separately above)
             }, company_id)
         
         return company_id
 
     
-    def get_company_glassdoor_rating(self, company_name):
+    def get_company_glassdoor_info(self, company_name):
         
         # check if any rating exists in database; if so than just use database data.
         company = None
@@ -206,7 +206,7 @@ class WebScrapper:
             # glassdoor might be single result page so have a different layout
             # like https://www.glassdoor.com/Overview/Working-at-Fannie-Mae-EI_IE247.11,21.htm
             rating_div = self.browser.access_targets((
-                'div.ratingInfo > div.ratingNum'
+                'div[class*=ratingInfo] > div[class*=ratingNum]'
             ), many=False)
             
             if rating_div == None:
@@ -217,7 +217,26 @@ class WebScrapper:
                 return -1
             
             rating = float(rating_div.get_attribute('innerHTML').strip())
-            return rating
+            
+            # get company overview info
+            overview_infoentity_divs = self.browser.access_targets((
+                'div.empBasicInfo div.info .infoEntity'
+            ))
+
+            # get size
+            size = ''
+            if overview_infoentity_divs:
+                size = htmldecode(
+                    overview_infoentity_divs[2].find_element_by_css_selector('span.value').get_attribute('innerHTML')
+                )
+            
+            # TODO: get Founded, industry, etc
+            # see https://www.glassdoor.com/Overview/Working-at-Aruba-Networks-EI_IE26809.11,25.htm
+            
+            return {
+                'rating': rating,
+                'size': size
+            }
     
     def batch_scrap_and_store_company_data(self, fortune_rank_range=[1,10]):
         if len(self.company_list) == 0:
@@ -251,21 +270,26 @@ class WebScrapper:
                 else:
                     company_id = company_result_list[0][database.CompanyTable.ID.value]
 
-                rating = self.get_company_glassdoor_rating(company_name)
+                company_gd_info = self.get_company_glassdoor_info(company_name)
 
-                self.create_or_update_company({
-                    'id': company_id,
-                    'name': company_name,
-                    'companyratings': [
-                        {
-                            'source': 'glassdoor',
-                            'value': rating
-                        },
+                company_ratings = [{
+                    'source': 'glassdoor',
+                    'value': company_gd_info['rating']
+                },]
+
+                if Settings.IS_FORTUNE_RANK:
+                    company_ratings.append(
                         {
                             'source': 'fortune 500',
                             'value': fortune_rank
                         }
-                    ]
+                    )
+
+                self.create_or_update_company({
+                    'id': company_id,
+                    'name': company_name,
+                    'size': company_gd_info['size'],
+                    'companyratings': company_ratings,
                 })
 
                 scrapped_company_id_list.append(company_id)

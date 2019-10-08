@@ -20,6 +20,21 @@ def index():
 def list_company():
     db_manager = database.DatabaseManager()
     company_list = db_manager.filter(database.Tables.COMPANY.value, {})
+    rating_list = db_manager.filter(database.Tables.COMPANY_RATING.value, {
+        'source': 'glassdoor'
+    })
+
+    # patch rating val into companies
+    for rating in rating_list:
+        rating_value = rating[database.CompanyRatingTable.VALUE.value]
+        company_id = rating[database.CompanyRatingTable.COMPANY_ID.value]
+        company_list[ company_id - 1 ] += (rating_value,)
+
+    def sort_key_func(company_cols_tuple):
+        return company_cols_tuple[-1] if company_cols_tuple[-1] != None else -1
+
+    company_list.sort(key=sort_key_func, reverse=True)
+
     context = {
         'company_list': company_list,
         'company_fields': database.CompanyTable,

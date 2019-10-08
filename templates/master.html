@@ -4,15 +4,21 @@
 <table>
     <thead>
         <tr>
+            <th>ID</th>
             <th>Company Name</th>
+            <th>Glassdoor Ratings</th>
+            <th>Size</th>
         </tr>
     </thead>
     <tbody>
         {% for company in company_list %}
         <tr>
+            <td>{{ company[company_fields.ID.value]}}</td>
             <td>
                 <a href="{{ company[company_fields.ID.value] }}/">{{ company[company_fields.NAME.value] }}</a>
             </td>
+            <td>{{ company[-1] }}</td>
+            <td>{{ company[company_fields.SIZE.value] }}</td>
         </tr>
         {% endfor %}
     </tbody>

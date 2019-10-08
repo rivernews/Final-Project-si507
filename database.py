@@ -147,7 +147,7 @@ class DatabaseManager:
             self.db.run_write_sql_commands([
                 ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
-                    name TEXT
+                    name TEXT,
                     size TEXT
                 );
                 '''.format(Tables.COMPANY.value),),
@@ -168,7 +168,10 @@ class DatabaseManager:
                 ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
                     url TEXT,
-                    filename TEXT
+                    filename TEXT,
+                    companyId INTEGER,
+
+                    FOREIGN KEY (companyId) REFERENCES Company(id)
                 );
                 '''.format(Tables.WEBPAGE_CACHE.value),),
             ])
@@ -192,3 +195,4 @@ class WebpageCacheTable(enum.Enum):
     ID = 0
     URL = 1
     FILENAME = 2
+    COMPANY_ID = 3
