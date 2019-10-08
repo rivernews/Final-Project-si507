@@ -1,6 +1,10 @@
 import database
 import settings as Settings
 
+from urllib.parse import quote as urlencode
+from html import escape as htmlencode
+from html import unescape as htmldecode
+
 class WebScrapper:
 
     def __init__(self, browser=None, db_manager=None):
@@ -8,6 +12,30 @@ class WebScrapper:
         self.db_manager = db_manager
         self.company_list = []
     
+    def fetch_umich_career_fair_19_company_list(self):
+        self.company_list = []
+        
+        css_selector = (
+            'table#header-fixed tbody tr'
+        )
+
+        self.navigate_to('https://tbp.engin.umich.edu/career_fair/companies/', page_name='umich_career_fair_19')
+
+        company_tr_list = self.browser.access_targets(css_selector)
+
+
+        for tr in company_tr_list:
+            tds = tr.find_elements_by_css_selector('td')
+
+            company_name = htmldecode(tds[0].find_element_by_css_selector('a').get_attribute('innerHTML'))
+
+            location = htmldecode(tds[4].get_attribute('innerHTML').lower())
+
+            sponsor_guard = int(htmldecode(tds[6].get_attribute('innerHTML').lower()))
+
+            if 'west coast' in location and sponsor_guard < 3:
+                self.company_list.append(company_name)
+
     def fetch_fortune_company_list(self, is_get_all=False):
         self.company_list = []
         # locate the company in the page
@@ -41,7 +69,7 @@ class WebScrapper:
         
         company_span_list = self.browser.access_targets(css_selector)
         self.company_list = [
-            span.get_attribute('innerHTML') for span in company_span_list
+            htmldecode(span.get_attribute('innerHTML')) for span in company_span_list
         ]
 
     def create_or_update_company(self, company_data={}):
@@ -152,7 +180,7 @@ class WebScrapper:
                     base_element=company_header,
                     many=False
                 )
-                if company_name_anchor.get_attribute('innerHTML').strip().lower() == company_name.lower():
+                if htmldecode(company_name_anchor.get_attribute('innerHTML').strip().lower()) == company_name.lower():
                     rating_span = self.browser.access_targets('div.ratingsSummary span.bigRating', base_element=company_header, many=False)
                     if rating_span == None:
                         # Not yet rated, like https://www.glassdoor.com/Reviews/plains-gp-holdings-reviews-SRCH_KE0,18.htm
@@ -263,6 +291,14 @@ class WebScrapper:
             infinite_scroll_maximum_scroll_times=infinite_scroll_maximum_scroll_times,
         )
     
-    def generate_glassdoor_company_query_url(self, company_name):
+    def generate_glassdoor_company_query_url(self, company_name_html):
+        company_name = company_name_html.replace('&amp;', '&')
+        print('INFO: company name = {}'.format(company_name))
+
+        # urllib escape / encode url, e.g. & --> %26
+        # SO: https://stackoverflow.com/questions/1695183/how-to-percent-encode-url-parameters-in-python
+        # python3 doc: https://docs.python.org/3/library/urllib.parse.html#url-quoting
+        url_encoded_company_name = urlencode(company_name, safe='')
+
         template_url = '''https://www.glassdoor.com/Reviews/company-reviews.htm?suggestCount=10&suggestChosen=false&clickSource=searchBtn&typedKeyword=%s&sc.keyword=%s&locT=C&locId=&jobType='''
-        return template_url.replace('%s', company_name)
+        return template_url.replace('%s', url_encoded_company_name)

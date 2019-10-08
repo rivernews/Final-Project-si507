@@ -1,12 +1,23 @@
 <a href="/">Back to home</a>
 <h1>Company List</h1>
 
-<ol>
-    {% for company in company_list %}
-    <li>
-        <a href="{{ company[company_fields.ID.value] }}/">{{ company[company_fields.NAME.value] }}</a>
-    </li>
-    {% endfor %}
-</ol>
+<table>
+    <thead>
+        <tr>
+            <th>Company Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for company in company_list %}
+        <tr>
+            <td>
+                <a href="{{ company[company_fields.ID.value] }}/">{{ company[company_fields.NAME.value] }}</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
 
 <a href="/">Back to home</a>

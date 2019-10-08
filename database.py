@@ -1,6 +1,7 @@
 import sqlite3 # https://docs.python.org/2/library/sqlite3.html
 import pathlib
 import os
+from settings import SQLITE_DATABASE_FILENAME
 
 import enum
 
@@ -50,7 +51,7 @@ class Database:
 
 class DatabaseManager:
 
-    db_name = 'my-database.sqlite'
+    db_name = SQLITE_DATABASE_FILENAME
     database_object = None
 
     def __init__(self, *args, **kwargs):
@@ -147,6 +148,7 @@ class DatabaseManager:
                 ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
                     name TEXT
+                    size TEXT
                 );
                 '''.format(Tables.COMPANY.value),),
             ])
@@ -177,6 +179,7 @@ class DatabaseManager:
 class CompanyTable(enum.Enum):
     ID = 0
     NAME = 1
+    SIZE = 2
 
 class CompanyRatingTable(enum.Enum):
     ID = 0
