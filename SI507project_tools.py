@@ -143,17 +143,29 @@ class WebScrapper:
             company = result_list[0]
         else:
             print(f'WARNING: company = {company_name} is not in database, so cannot lookup glassdoor rating for it.')
-            return
+            return {}
         
-        glassdoor_company_rating = None
+        
         result_list = self.db_manager.filter(database.Tables.COMPANY_RATING.value, {
             'companyId': company[database.CompanyTable.ID.value],
             'source': 'glassdoor'
         })
+        
+        result_list_company_info = self.db_manager.filter(database.Tables.COMPANY.value, {
+            'id': company[database.CompanyTable.ID.value],
+        })
+
+        glassdoor_company_rating = None
+        glassdoor_company_info = None
         if len(result_list) > 0:
             glassdoor_company_rating = result_list[0]
-            return glassdoor_company_rating[database.CompanyRatingTable.VALUE.value]
+            glassdoor_company_info = result_list_company_info[0] # since we use `filter` it returns a list
+            return {
+                'rating': glassdoor_company_rating[database.CompanyRatingTable.VALUE.value],
+                'size': glassdoor_company_info[database.CompanyTable.SIZE.value],
+            }
 
+        
         # rating for company is not in database, so we now scrap it
         rating = -1
 
@@ -171,6 +183,9 @@ class WebScrapper:
         company_header_list = self.browser.access_targets(
             company_header_css_selector
         )
+
+        # glassdoor page is like a list of company results
+        # like https://www.glassdoor.com/Reviews/amazon-reviews-SRCH_KE0,6.htm
         if len(company_header_list) > 0:
             for company_header in company_header_list:
 
@@ -184,9 +199,17 @@ class WebScrapper:
                     rating_span = self.browser.access_targets('div.ratingsSummary span.bigRating', base_element=company_header, many=False)
                     if rating_span == None:
                         # Not yet rated, like https://www.glassdoor.com/Reviews/plains-gp-holdings-reviews-SRCH_KE0,18.htm
-                        return -1
+                        return {
+                            'rating': -1,
+                            'size': 'cannot scrap (list view)'
+                        }
+                        
                     rating = float(rating_span.get_attribute('innerHTML').strip())
-                    return rating
+                    
+                    return {
+                        'rating': rating,
+                        'size': 'cannot scrap (list view)'
+                    }
             
             # no company header matches company name, then just use first search result
             company_header = company_header_list[0]
@@ -197,26 +220,35 @@ class WebScrapper:
                 # but the company has no rating data yet
                 # e.g. https://www.glassdoor.com/Reviews/united-continental-holdings-reviews-SRCH_KE0,27.htm
                 print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {self.generate_glassdoor_company_query_url(company_name)}')
-                return -1
+                
+                return {
+                    'rating': -1,
+                    'size': 'cannot scrap (list view)'
+                }
 
             rating = float(rating_span.get_attribute('innerHTML').strip())
-            return rating
+            
+            return {
+                'rating': rating,
+                'size': 'cannot scrap (list view)'
+            }
 
         else:
             # glassdoor might be single result page so have a different layout
             # like https://www.glassdoor.com/Overview/Working-at-Fannie-Mae-EI_IE247.11,21.htm
+            # like https://www.glassdoor.com/Overview/Working-at-Aruba-Networks-EI_IE26809.11,25.htm
             rating_div = self.browser.access_targets((
                 'div[class*=ratingInfo] > div[class*=ratingNum]'
             ), many=False)
             
+            rating = -1
             if rating_div == None:
                 # exception, not sure what's going on here & might need to look at the webpage to actually see what it looks like
                 # like https://www.glassdoor.com/Reviews/costco-reviews-SRCH_KE0,6.htm
                 # The company name in Fortune 500 is Costco, but in glassdoor the name is `Costco Wholesale`
                 print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {self.generate_glassdoor_company_query_url(company_name)}')
-                return -1
-            
-            rating = float(rating_div.get_attribute('innerHTML').strip())
+            else:
+                rating = float(rating_div.get_attribute('innerHTML').strip())
             
             # get company overview info
             overview_infoentity_divs = self.browser.access_targets((
