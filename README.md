@@ -183,3 +183,5 @@ Below is a list of the requirements listed in the rubric for you to copy and pas
 - [How to return id after insert using SQL in python?](https://stackoverflow.com/questions/2548493/how-do-i-get-the-id-after-insert-into-mysql-database-with-python)
 
 - [How to make Selenium run in the background?](https://stackoverflow.com/questions/16180428/can-selenium-webdriver-open-browser-windows-silently-in-background)
+
+- [Update ChromeDriver](https://chromedriver.chromium.org/downloads)

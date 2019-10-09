@@ -1,22 +1,87 @@
 import database
 import settings as Settings
+from browser import Browser
 
 from urllib.parse import quote as urlencode
 from html import escape as htmlencode
 from html import unescape as htmldecode
 from selenium.common.exceptions import (
     TimeoutException,
+    NoSuchElementException
 )
+
+import time
 
 class WebScrapper:
 
     def __init__(self, browser=None, db_manager=None):
         self.browser = browser
         self.db_manager = db_manager
-        self.company_list = []
+    
+    def fetch_usc_career_fair_19_company_list(self):
+        company_list = []
+
+        print('INFO: scrapping usc career fair...')
+
+        self.navigate_to('https://viterbi-usc-csm.symplicity.com/events/62700422c3edc7ce491a05d556bc2603/employers', page_name='usc_career_fair_19', no_cache=True)
+
+        time.sleep(4)
+
+        # click advance search
+        advanced_search_link = self.browser.browser.find_element_by_css_selector('a.more_filters_tag')
+        advanced_search_link.click() # https://stackoverflow.com/a/21350625/9814131
+
+        time.sleep(2)
+
+        # check sponsorship checkbox
+        sponsorship_checkbox = self.browser.browser.find_elements_by_css_selector('div.modal div.modal-body div.adv_filters:nth-child(3) input')[1]
+        sponsorship_checkbox.click()
+
+        # check computer science major
+        checkbox_lis = self.browser.browser.find_elements_by_css_selector('div.modal div.modal-body div.adv_filters:nth-child(4) ul:nth-child(1) li')
+        cs_major_checkbox = None
+        for checkbox_li in checkbox_lis:
+            try:
+                label_content = htmldecode(checkbox_li.find_element_by_css_selector('label').get_attribute('innerHTML'))
+                if 'computer science' in label_content.lower():
+                    cs_major_checkbox = checkbox_li.find_element_by_css_selector('input')
+            except:
+                continue
+        cs_major_checkbox.click()
+
+        # press button `search`
+        search_button = self.browser.browser.find_element_by_css_selector('div.modal div.modal-footer button:nth-child(1)')
+        search_button.click()
+        
+        time.sleep(2)
+
+        # scrap company list
+        while True:
+            css_selector = (
+                'div.list_rows li.company h2 span'
+            )
+
+            company_span_list = self.browser.access_targets(css_selector)
+            company_list += [
+                htmldecode(company_span.get_attribute('innerHTML')) for company_span in company_span_list
+            ]
+            print('list len', len(company_list))
+
+            try:
+                next_button = self.browser.browser.find_element_by_css_selector('paging-controls span.lst-paging button:nth-of-type(2):not([disabled])')
+                print('next button=', next_button)
+                # since next_button.click() is not working (element not interactable error), we use javascript to trigger
+                # https://stackoverflow.com/a/56119786/9814131
+                self.browser.browser.execute_script('arguments[0].click();', next_button)
+                time.sleep(3)
+            except NoSuchElementException:
+                break
+
+        return company_list
+
     
     def fetch_umich_career_fair_19_company_list(self):
-        self.company_list = []
+        company_list = []
         
         css_selector = (
             'table#header-fixed tbody tr'
@@ -36,11 +101,15 @@ class WebScrapper:
 
             sponsor_guard = int(htmldecode(tds[6].get_attribute('innerHTML').lower()))
 
-            if 'west coast' in location and sponsor_guard < 3:
-                self.company_list.append(company_name)
+            hiring_majors = htmldecode(tds[1].get_attribute('innerHTML').lower())
+
+            if 'west coast' in location and sponsor_guard < 3 and 'cs' in hiring_majors:
+                company_list.append(company_name)
+        
+        return company_list
 
     def fetch_fortune_company_list(self, is_get_all=False):
-        self.company_list = []
+        company_list = []
         # locate the company in the page
         css_selector = (
             'ul.company-list ' +
@@ -69,9 +138,9 @@ class WebScrapper:
             )
 
         # get the company name list
-        
         company_span_list = self.browser.access_targets(css_selector)
-        self.company_list = [
+
+        return [
             htmldecode(span.get_attribute('innerHTML')) for span in company_span_list
         ]
 
@@ -304,28 +373,28 @@ class WebScrapper:
                 'url': url,
             }
     
-    def batch_scrap_and_store_company_data(self, fortune_rank_range=[1,10]):
-        if len(self.company_list) == 0:
+    def batch_scrap_and_store_company_data(self, company_list, fortune_rank_range=[1,10]):
+        if len(company_list) == 0:
             self.fetch_fortune_company_list()
         
         scrapped_company_id_list = []
 
         loop_range = None
         if isinstance(fortune_rank_range, list):
-            if len(fortune_rank_range) == 2 and fortune_rank_range[1] <= len(self.company_list):
+            if len(fortune_rank_range) == 2 and fortune_rank_range[1] <= len(company_list):
                 loop_range = range(fortune_rank_range[0], fortune_rank_range[1] + 1)
             elif len(fortune_rank_range) == 1:
-                # by default we will fetch as much companies as we can if amount/end rank exceeded `self.company_list`
-                loop_range = range(fortune_rank_range[0], len(self.company_list) + 1)
+                # by default we will fetch as much companies as we can if amount/end rank exceeded `company_list`
+                loop_range = range(fortune_rank_range[0], len(company_list) + 1)
             else:
-                loop_range = range(1, len(self.company_list) + 1)
+                loop_range = range(1, len(company_list) + 1)
         # only work on one company given the specific rank number
         elif isinstance(fortune_rank_range, int):
             loop_range = range(fortune_rank_range, fortune_rank_range + 1)
         
         if loop_range:
             for fortune_rank in loop_range:
-                company_name = self.company_list[fortune_rank - 1]
+                company_name = company_list[fortune_rank - 1]
                 
                 # query company object in database
                 company_result_list = self.db_manager.filter(database.Tables.COMPANY.value, {
@@ -372,6 +441,8 @@ class WebScrapper:
         infinite_scroll_element_maximum_amount=1000,
         infinite_scroll_maximum_scroll_times=10,
         get_page_timeout=60,
+        wait_time_before_cache=1,
+        no_cache=False,
     ):
         self.browser.request_page(
             page_url=url, page_name=page_name,
@@ -381,6 +452,8 @@ class WebScrapper:
             infinite_scroll_timeout=infinite_scroll_timeout,
             infinite_scroll_element_maximum_amount=infinite_scroll_element_maximum_amount,
             infinite_scroll_maximum_scroll_times=infinite_scroll_maximum_scroll_times,
+            wait_time_before_cache=wait_time_before_cache,
+            no_cache=no_cache
         )
     
     @staticmethod

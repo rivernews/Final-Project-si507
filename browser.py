@@ -21,11 +21,12 @@ import settings as Settings
 class Browser:
     
     def __init__(self, db_manager, *args, **kwargs):
-        self.browser = self.get_browser()
+        self.browser = Browser.get_browser()
         self.db_manager = db_manager
         return super().__init__(*args, **kwargs)
     
-    def get_browser(self):
+    @staticmethod
+    def get_browser(page_load_strategy="eager"):
         PROJECT_ROOT_DIRECTORY  = Path(__file__).parent
 
         options = Options()
@@ -41,11 +42,17 @@ class Browser:
         if Settings.BROWSER_HEADLESS:
             options.add_argument("--headless")
 
+        desired_capabilities = DesiredCapabilities().CHROME
+        # set chrome to stop upon page become interactive
+        # see https://stackoverflow.com/a/44771628/9814131
+        desired_capabilities["pageLoadStrategy"] = page_load_strategy
+
         # https://stackoverflow.com/questions/44770796/how-to-make-selenium-not-wait-till-full-page-load-which-has-a-slow-script/44771628
         
         browser = webdriver.Chrome(
-            executable_path=(PROJECT_ROOT_DIRECTORY / 'chromedriver').resolve(),
+            executable_path=(PROJECT_ROOT_DIRECTORY / 'chromedriver.77.0.3865.40').resolve(),
             options=options,
+            desired_capabilities=desired_capabilities,
         )
 
         return browser
@@ -148,20 +155,23 @@ class Browser:
             infinite_scroll_maximum_scroll_times,
             page_url="http://fortune.com/fortune500/list/",
             page_name='',
-            get_page_timeout=60,
+            get_page_timeout=30,
+            wait_time_before_cache=1,
+            no_cache=False,
         ):
         # try:
         print("INFO: browser getting the page...")
         
-        cache_lookup_result_list = self.db_manager.filter(database.Tables.WEBPAGE_CACHE.value, {
-            'url': page_url
-        })
-        cache_file_path = None
-        if len(cache_lookup_result_list) > 0:
-            print("Cache found =", cache_lookup_result_list[0][2])
-            cache_file_path = Path(cache_lookup_result_list[0][2])
+        if not no_cache:
+            cache_lookup_result_list = self.db_manager.filter(database.Tables.WEBPAGE_CACHE.value, {
+                'url': page_url
+            })
+            cache_file_path = None
+            if len(cache_lookup_result_list) > 0:
+                print("Cache found =", cache_lookup_result_list[0][2])
+                cache_file_path = Path(cache_lookup_result_list[0][2])
 
-        if cache_file_path and cache_file_path.exists():
+        if not no_cache and cache_file_path and cache_file_path.exists():
             self.browser.get(f'file://{cache_file_path.absolute()}')
         else:
             print("not using cache, paeg url is", page_url)
@@ -180,13 +190,15 @@ class Browser:
                 )
 
             # cache webpage
-            sanitized_page_name = re.sub(r'[^0-9a-zA-Z_]', '-', page_name.lower())
-            filename = f'cache/{sanitized_page_name}.html'
-            self.save_page(filename)
-            self.db_manager.create(database.Tables.WEBPAGE_CACHE.value, {
-                'url': page_url,
-                'filename': filename
-            }, ['url'])
+            if not no_cache:
+                time.sleep(wait_time_before_cache)
+                sanitized_page_name = re.sub(r'[^0-9a-zA-Z_]', '-', page_name.lower())
+                filename = f'cache/{sanitized_page_name}.html'
+                self.save_page(filename)
+                self.db_manager.create(database.Tables.WEBPAGE_CACHE.value, {
+                    'url': page_url,
+                    'filename': filename
+                }, ['url'])
         
         return True
         # except TimeoutException:

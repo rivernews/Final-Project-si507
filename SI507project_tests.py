@@ -35,7 +35,7 @@ class TestCases(unittest.TestCase):
     def test_company_data_store(self, fortune_rank=1):
         self.scrapper = WebScrapper(browser=self.browser, db_manager=self.db_manager)
         
-        company_id = self.scrapper.batch_scrap_and_store_company_data(fortune_rank)[0]
+        company_id = self.scrapper.batch_scrap_and_store_company_data(fortune_rank)[0] # TODO: pass over company list to `batch_scrap_and_store_company_data`
         company_name = self.scrapper.company_list[fortune_rank - 1]
         glassdoor_rating = self.scrapper.get_company_glassdoor_info(company_name)['rating']
 
