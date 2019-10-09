@@ -177,9 +177,9 @@ class WebScrapper:
 
         try:
             self.navigate_to(
-                self.generate_glassdoor_company_query_url(company_name),
+                WebScrapper.generate_glassdoor_company_query_url(company_name),
                 page_name=f'gd-{sanitized_company_name}',
-                get_page_timeout=300,
+                get_page_timeout=Settings.NAVIGATE_WEBPAGE_TIMEOUT,
             )
         except TimeoutException:
             return {
@@ -244,7 +244,7 @@ class WebScrapper:
                 # We guess the 1st result is the correct company
                 # but the company has no rating data yet
                 # e.g. https://www.glassdoor.com/Reviews/united-continental-holdings-reviews-SRCH_KE0,27.htm
-                print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {self.generate_glassdoor_company_query_url(company_name)}')
+                print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {WebScrapper.generate_glassdoor_company_query_url(company_name)}')
                 
                 return {
                     'rating': -1,
@@ -273,7 +273,7 @@ class WebScrapper:
                 # exception, not sure what's going on here & might need to look at the webpage to actually see what it looks like
                 # like https://www.glassdoor.com/Reviews/costco-reviews-SRCH_KE0,6.htm
                 # The company name in Fortune 500 is Costco, but in glassdoor the name is `Costco Wholesale`
-                print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {self.generate_glassdoor_company_query_url(company_name)}')
+                print(f'WARNING: cannot get glassdoor rating for {company_name}. Url = {WebScrapper.generate_glassdoor_company_query_url(company_name)}')
             else:
                 rating = float(rating_div.get_attribute('innerHTML').strip())
             
@@ -383,7 +383,8 @@ class WebScrapper:
             infinite_scroll_maximum_scroll_times=infinite_scroll_maximum_scroll_times,
         )
     
-    def generate_glassdoor_company_query_url(self, company_name_html):
+    @staticmethod
+    def generate_glassdoor_company_query_url(company_name_html):
         company_name = company_name_html.replace('&amp;', '&')
         print('INFO: company name = {}'.format(company_name))
 

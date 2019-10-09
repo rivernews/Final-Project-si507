@@ -17,7 +17,9 @@
             <td>
                 <a target="_blank" {% if company[company_fields.URL.value] %} href="https://{{ company[company_fields.URL.value] }}" {% endif %}>{{ company[company_fields.NAME.value] }}</a>
             </td>
-            <td>{{ company[company_rating_field_index] }}</td>
+            <td><a target="_blank" href="{{ company[company_fields.NAME.value]|as_glassdoor_url }}">
+                {{ company[company_rating_field_index] }}
+            </a></td>
             <td>{{ company[company_fields.SIZE.value] }}</td>
         </tr>
         {% endfor %}

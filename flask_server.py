@@ -21,6 +21,11 @@ app.config['SECRET_KEY'] = 'hard to guess string for app security adgsdfsadfdfls
 from controllers import routes
 app.register_blueprint(routes)
 
+
+from filter import filters
+app.register_blueprint(filters)
+
+
 if __name__ == '__main__':
     # db.create_all() # This will create database in current directory, as set up, if it doesn't exist, but won't overwrite if you restart - so no worries about that
     app.run() # run with this: python main_app.py runserver
