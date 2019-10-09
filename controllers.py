@@ -19,25 +19,26 @@ def index():
 @routes.route('/companies/')
 def list_company():
     db_manager = database.DatabaseManager()
-    company_list = db_manager.filter(database.Tables.COMPANY.value, {})
-    rating_list = db_manager.filter(database.Tables.COMPANY_RATING.value, {
-        'source': 'glassdoor'
-    })
+    # company_list = db_manager.filter(database.Tables.COMPANY.value, {})
 
-    # patch rating val into companies
-    for rating in rating_list:
-        rating_value = rating[database.CompanyRatingTable.VALUE.value]
-        company_id = rating[database.CompanyRatingTable.COMPANY_ID.value]
-        company_list[ company_id - 1 ] += (rating_value,)
+    # join rating val into companies
+    db_manager.db.cursor.execute(
+        f"""
+            SELECT company.id, company.name, company.size, company.url, rating.value
+            FROM {database.Tables.COMPANY.value} AS company
+            LEFT JOIN CompanyRating AS rating
+            ON company.id = rating.id
+            WHERE rating.source = 'glassdoor'
+            ORDER BY rating.value desc;
+        """
+    )
 
-    def sort_key_func(company_cols_tuple):
-        return company_cols_tuple[-1] if company_cols_tuple[-1] != None else -1
-
-    company_list.sort(key=sort_key_func, reverse=True)
+    company_list = db_manager.db.cursor.fetchall()
 
     context = {
         'company_list': company_list,
         'company_fields': database.CompanyTable,
+        'company_rating_field_index': 4
     }
     return render_template('master.html', **context)
 

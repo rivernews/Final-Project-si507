@@ -148,7 +148,8 @@ class DatabaseManager:
                 ('''CREATE TABLE {} (
                     id INTEGER PRIMARY KEY,
                     name TEXT,
-                    size TEXT
+                    size TEXT,
+                    url TEXT
                 );
                 '''.format(Tables.COMPANY.value),),
             ])
@@ -183,6 +184,7 @@ class CompanyTable(enum.Enum):
     ID = 0
     NAME = 1
     SIZE = 2
+    URL = 3
 
 class CompanyRatingTable(enum.Enum):
     ID = 0

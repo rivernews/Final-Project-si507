@@ -4,6 +4,9 @@ import settings as Settings
 from urllib.parse import quote as urlencode
 from html import escape as htmlencode
 from html import unescape as htmldecode
+from selenium.common.exceptions import (
+    TimeoutException,
+)
 
 class WebScrapper:
 
@@ -133,8 +136,8 @@ class WebScrapper:
 
     
     def get_company_glassdoor_info(self, company_name):
-        
-        # check if any rating exists in database; if so than just use database data.
+        # at this point, it's assumed that the company should already be created
+        # we double check such company exist, then we can start scarping for it
         company = None
         result_list = self.db_manager.filter(database.Tables.COMPANY.value, {
             'name': company_name
@@ -145,7 +148,7 @@ class WebScrapper:
             print(f'WARNING: company = {company_name} is not in database, so cannot lookup glassdoor rating for it.')
             return {}
         
-        
+        # check if any rating AND such company contains scrapped data in database (not only just got initialized); if so than just use database data.
         result_list = self.db_manager.filter(database.Tables.COMPANY_RATING.value, {
             'companyId': company[database.CompanyTable.ID.value],
             'source': 'glassdoor'
@@ -157,27 +160,47 @@ class WebScrapper:
 
         glassdoor_company_rating = None
         glassdoor_company_info = None
-        if len(result_list) > 0:
+        if len(result_list) > 0 and len(result_list_company_info) > 0 and result_list_company_info[0][database.CompanyTable.URL.value] != None: # company contains scrapped data in database
             glassdoor_company_rating = result_list[0]
             glassdoor_company_info = result_list_company_info[0] # since we use `filter` it returns a list
             return {
                 'rating': glassdoor_company_rating[database.CompanyRatingTable.VALUE.value],
                 'size': glassdoor_company_info[database.CompanyTable.SIZE.value],
+                'url': glassdoor_company_info[database.CompanyTable.URL.value],
             }
 
         
-        # rating for company is not in database, so we now scrap it
-        rating = -1
+        # rating for company OR company itself doens't contain scrapped data in database, so we now scrap it, access company info & rating
+        # if rating already exist, will skip it (based on the create() policy of ORM)
+        # navigate the crawler to target webpage
+        sanitized_company_name = company_name.strip().replace(' ', '-')
 
+        try:
+            self.navigate_to(
+                self.generate_glassdoor_company_query_url(company_name),
+                page_name=f'gd-{sanitized_company_name}',
+                get_page_timeout=300,
+            )
+        except TimeoutException:
+            return {
+                'rating': -1,
+                'size': 'cannot scrape (timeout)',
+                'url': None
+            }
+        except Exception as e:
+            return {
+                'rating': -1,
+                'size': f'cannot scrape (selenium error requesting page: {str(e)})',
+                'url': None,
+            }
+        
+        # start pasring the page
         company_header_css_selector = (
             'div[id=ReviewSearchResults] ' +
             'div.header.cell.info'
         )
-        sanitized_company_name = company_name.strip().replace(' ', '-')
-        self.navigate_to(
-            self.generate_glassdoor_company_query_url(company_name),
-            page_name=f'gd-{sanitized_company_name}'
-        )
+
+        rating = -1
 
         # extract that specific company rating data
         company_header_list = self.browser.access_targets(
@@ -201,14 +224,16 @@ class WebScrapper:
                         # Not yet rated, like https://www.glassdoor.com/Reviews/plains-gp-holdings-reviews-SRCH_KE0,18.htm
                         return {
                             'rating': -1,
-                            'size': 'cannot scrap (list view)'
+                            'size': 'cannot scrap (list view)',
+                            'url': None,
                         }
                         
                     rating = float(rating_span.get_attribute('innerHTML').strip())
                     
                     return {
                         'rating': rating,
-                        'size': 'cannot scrap (list view)'
+                        'size': 'cannot scrap (list view)',
+                        'url': None,
                     }
             
             # no company header matches company name, then just use first search result
@@ -223,14 +248,16 @@ class WebScrapper:
                 
                 return {
                     'rating': -1,
-                    'size': 'cannot scrap (list view)'
+                    'size': 'cannot scrap (list view)',
+                    'url': None
                 }
 
             rating = float(rating_span.get_attribute('innerHTML').strip())
             
             return {
                 'rating': rating,
-                'size': 'cannot scrap (list view)'
+                'size': 'cannot scrap (list view)',
+                'url': None,
             }
 
         else:
@@ -262,12 +289,19 @@ class WebScrapper:
                     overview_infoentity_divs[2].find_element_by_css_selector('span.value').get_attribute('innerHTML')
                 )
             
+            url = ''
+            if overview_infoentity_divs:
+                url = htmldecode(
+                    overview_infoentity_divs[0].find_element_by_css_selector('a.link').get_attribute('innerHTML')
+                )
+            
             # TODO: get Founded, industry, etc
             # see https://www.glassdoor.com/Overview/Working-at-Aruba-Networks-EI_IE26809.11,25.htm
-            
+
             return {
                 'rating': rating,
-                'size': size
+                'size': size if size else 'cannot scrap',
+                'url': url,
             }
     
     def batch_scrap_and_store_company_data(self, fortune_rank_range=[1,10]):
@@ -321,6 +355,7 @@ class WebScrapper:
                     'id': company_id,
                     'name': company_name,
                     'size': company_gd_info['size'],
+                    'url': company_gd_info['url'],
                     'companyratings': company_ratings,
                 })
 
@@ -336,6 +371,7 @@ class WebScrapper:
         infinite_scroll_timeout=20,
         infinite_scroll_element_maximum_amount=1000,
         infinite_scroll_maximum_scroll_times=10,
+        get_page_timeout=60,
     ):
         self.browser.request_page(
             page_url=url, page_name=page_name,

@@ -148,50 +148,52 @@ class Browser:
             infinite_scroll_maximum_scroll_times,
             page_url="http://fortune.com/fortune500/list/",
             page_name='',
+            get_page_timeout=60,
         ):
-        try:
-            print("INFO: browser getting the page...")
+        # try:
+        print("INFO: browser getting the page...")
+        
+        cache_lookup_result_list = self.db_manager.filter(database.Tables.WEBPAGE_CACHE.value, {
+            'url': page_url
+        })
+        cache_file_path = None
+        if len(cache_lookup_result_list) > 0:
+            print("Cache found =", cache_lookup_result_list[0][2])
+            cache_file_path = Path(cache_lookup_result_list[0][2])
+
+        if cache_file_path and cache_file_path.exists():
+            self.browser.get(f'file://{cache_file_path.absolute()}')
+        else:
+            print("not using cache, paeg url is", page_url)
             
-            cache_lookup_result_list = self.db_manager.filter(database.Tables.WEBPAGE_CACHE.value, {
-                'url': page_url
-            })
-            cache_file_path = None
-            if len(cache_lookup_result_list) > 0:
-                print("Cache found =", cache_lookup_result_list[0][2])
-                cache_file_path = Path(cache_lookup_result_list[0][2])
+            # access page online
+            self.browser.set_page_load_timeout(get_page_timeout)
+            self.browser.get(page_url)
 
-            if cache_file_path and cache_file_path.exists():
-                self.browser.get(f'file://{cache_file_path.absolute()}')
-            else:
-                print("not using cache, paeg url is", page_url)
-                
-                # access page online
-                self.browser.get(page_url)
+            if infinite_scroll and infinite_scroll_spinner_css_selector and infinite_scroll_element_css_selector:
+                self.consume_infinite_scroll_page(
+                    infinite_scroll_spinner_css_selector,
+                    infinite_scroll_element_css_selector,
+                    infinite_scroll_timeout,
+                    infinite_scroll_element_maximum_amount,
+                    infinite_scroll_maximum_scroll_times,
+                )
 
-                if infinite_scroll and infinite_scroll_spinner_css_selector and infinite_scroll_element_css_selector:
-                    self.consume_infinite_scroll_page(
-                        infinite_scroll_spinner_css_selector,
-                        infinite_scroll_element_css_selector,
-                        infinite_scroll_timeout,
-                        infinite_scroll_element_maximum_amount,
-                        infinite_scroll_maximum_scroll_times,
-                    )
-
-                # cache webpage
-                sanitized_page_name = re.sub(r'[^0-9a-zA-Z_]', '-', page_name.lower())
-                filename = f'cache/{sanitized_page_name}.html'
-                self.save_page(filename)
-                self.db_manager.create(database.Tables.WEBPAGE_CACHE.value, {
-                    'url': page_url,
-                    'filename': filename
-                }, ['url'])
-            
-            return True
-        except TimeoutException:
-            print("ERROR: Timeout waiting for GET webpage")
-            return False
-        except Exception as e:
-            raise RuntimeError("ERROR: fail to request page {}. Exception={}".format(page_url, e))
+            # cache webpage
+            sanitized_page_name = re.sub(r'[^0-9a-zA-Z_]', '-', page_name.lower())
+            filename = f'cache/{sanitized_page_name}.html'
+            self.save_page(filename)
+            self.db_manager.create(database.Tables.WEBPAGE_CACHE.value, {
+                'url': page_url,
+                'filename': filename
+            }, ['url'])
+        
+        return True
+        # except TimeoutException:
+        #     print("ERROR: Timeout waiting for GET webpage")
+        #     return False
+        # except Exception as e:
+        #     raise RuntimeError("ERROR: fail to request page {}. Exception={}".format(page_url, e))
     
     def access_targets(self, selector, base_element=None, many=True):
         """
