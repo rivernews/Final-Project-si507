@@ -5,7 +5,7 @@ gunicorn==19.4.1
 Flask==0.12.2
 Flask-SQLAlchemy==2.2
 itsdangerous>=0.21
-Jinja2==2.7.3
+Jinja2==2.11.3
 six==1.8.0
 sqlparse==0.1.11
 coverage==3.7.1
